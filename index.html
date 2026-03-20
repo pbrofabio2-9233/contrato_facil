@@ -17,17 +17,21 @@
         h3 { color: #2c3e50; font-size: 16px; margin-top: 25px; border-bottom: 2px solid #e65c00; padding-bottom: 5px; }
         label { font-weight: bold; display: block; margin-top: 15px; font-size: 14px; color: #555; }
         
-        input[type="text"], select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background-color: #fafafa; font-size: 15px; transition: 0.3s; }
-        input[type="text"]:focus, select:focus { border-color: #e65c00; outline: none; background-color: #fff; }
+        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background-color: #fafafa; font-size: 15px; transition: 0.3s; }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus { border-color: #e65c00; outline: none; background-color: #fff; }
         .maiusculo { text-transform: uppercase; }
         
-        .linha-dupla { display: flex; gap: 15px; }
+        .linha-dupla { display: flex; gap: 15px; align-items: flex-end; }
         .linha-dupla div { flex: 1; }
         
+        /* Estilo para o botãozinho de buscar CNPJ */
+        .btn-buscar { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+        .btn-buscar:hover { background-color: #2980b9; }
+
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
         
-        button { width: 100%; padding: 15px; margin-top: 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #219653; }
+        button.btn-principal { width: 100%; padding: 15px; margin-top: 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button.btn-principal:hover { background-color: #219653; }
     </style>
 </head>
 <body>
@@ -43,6 +47,17 @@
             </select>
 
             <h3>Dados do Cliente</h3>
+            
+            <div class="linha-dupla">
+                <div style="flex: 2;">
+                    <label>CPF / CNPJ:</label>
+                    <input type="text" id="cnpj" placeholder="Digite para buscar..." maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
+                </div>
+                <div style="flex: 1;">
+                    <button class="btn-buscar" onclick="buscarDadosCNPJ()">🔍 Buscar</button>
+                </div>
+            </div>
+
             <label>Nome do Cliente (Contratante):</label>
             <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA">
 
@@ -53,11 +68,9 @@
 
             <div class="linha-dupla">
                 <div><label>CEP:</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)"></div>
-                <div><label>CPF / CNPJ:</label><input type="text" id="cnpj" placeholder="000.000.000-00" maxlength="18" oninput="aplicarMascaraCpfCnpj(this)"></div>
+                
+                <div><label>Data do Contrato:</label><input type="date" id="dataEscolhida"></div>
             </div>
-
-            <label>Data por Extenso:</label>
-            <input type="text" id="dataExtenso" placeholder="Ex: 19 de março de 2026">
 
             <h3>Configuração dos Cartões</h3>
             <label>Escolha o Pacote:</label>
@@ -70,7 +83,7 @@
             </select>
 
             <div id="caixaPersonalizada">
-                <label style="color: #e65c00; text-align: center; margin-top: 0;">Preencha os dados do pacote personalizado:</label>
+                <label style="color: #e65c00; text-align: center; margin-top: 0;">Preencha os dados personalizados:</label>
                 <div class="linha-dupla">
                     <div><label>Qtd (Número):</label><input type="text" id="qtdCartoes" placeholder="Ex: 350"></div>
                     <div><label>Qtd (Extenso):</label><input type="text" id="qtdExtenso" placeholder="Ex: Trezentos e Cinquenta"></div>
@@ -81,30 +94,62 @@
                 </div>
             </div>
 
-            <button onclick="gerarDocumento()">Gerar Documento Preenchido</button>
+            <button class="btn-principal" onclick="gerarDocumento()">Gerar Documento Preenchido</button>
         </div>
     </div>
 
     <script>
-        // --- NOVA FUNÇÃO: Descobrir e preencher a data de hoje ---
-        function preencherDataAutomaticamente() {
-            // Criamos a lista de meses para traduzir o número em palavra
-            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-            
-            const hoje = new Date(); // Pega a data e hora atual do aparelho
-            const dia = hoje.getDate();
-            const mes = meses[hoje.getMonth()]; // Pega o mês e traduz usando nossa lista
+        // --- FUNÇÃO 1: Coloca a data de hoje no calendário logo que a página abre ---
+        window.onload = function() {
+            const hoje = new Date();
             const ano = hoje.getFullYear();
-
-            // Monta a frase "Dia de Mês de Ano"
-            const dataFormatada = dia + " de " + mes + " de " + ano;
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
             
-            // Joga essa frase dentro do campo de texto
-            document.getElementById('dataExtenso').value = dataFormatada;
-        }
+            // O calendário do HTML exige o formato YYYY-MM-DD
+            document.getElementById('dataEscolhida').value = `${ano}-${mes}-${dia}`;
+        };
 
-        // Essa linha avisa o navegador: "Quando a página terminar de carregar, execute a função da data"
-        window.onload = preencherDataAutomaticamente;
+        // --- FUNÇÃO 2: A mágica que busca os dados da Receita Federal ---
+        async function buscarDadosCNPJ() {
+            // Pega o CNPJ digitado e limpa os pontos e traços
+            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
+            
+            if (cnpjDigitado.length !== 14) {
+                alert("Por favor, digite um CNPJ completo para buscar.");
+                return;
+            }
+
+            // Avisa o usuário que está buscando
+            document.getElementById('cliente').value = "Buscando dados na Receita...";
+
+            try {
+                // Acessa o banco de dados gratuito da BrasilAPI
+                const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
+                
+                if (!resposta.ok) {
+                    throw new Error("CNPJ não encontrado");
+                }
+
+                const dados = await resposta.json();
+
+                // Preenche os campos automaticamente!
+                document.getElementById('cliente').value = dados.razao_social;
+                document.getElementById('cidade').value = dados.municipio;
+                document.getElementById('uf').value = dados.uf;
+                
+                // Formata e preenche o CEP
+                let cep = dados.cep ? dados.cep.toString() : "";
+                if(cep.length === 8) {
+                    cep = cep.substring(0,5) + "-" + cep.substring(5);
+                }
+                document.getElementById('cep').value = cep;
+
+            } catch (erro) {
+                alert("Não foi possível encontrar esse CNPJ. Verifique se o número está correto ou preencha manualmente.");
+                document.getElementById('cliente').value = "";
+            }
+        }
 
         function aplicarMascaraCEP(campo) {
             let valor = campo.value.replace(/\D/g, ""); 
@@ -130,12 +175,23 @@
         function verificarPacote() {
             const escolha = document.getElementById("pacoteCartoes").value;
             const caixa = document.getElementById("caixaPersonalizada");
-            
             if (escolha === "personalizado") {
                 caixa.style.display = "block";
             } else {
                 caixa.style.display = "none";
             }
+        }
+
+        // --- FUNÇÃO 3: Traduz a data do calendário (YYYY-MM-DD) para Extenso ---
+        function formatarDataPorExtenso(dataDoCalendario) {
+            if (!dataDoCalendario) return "";
+            const partes = dataDoCalendario.split('-'); // Corta a data no traço
+            const ano = partes[0];
+            const mesNumero = parseInt(partes[1]) - 1; // Ajusta o mês (Janeiro é 0 no JS)
+            const dia = partes[2];
+            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            
+            return dia + " de " + meses[mesNumero] + " de " + ano;
         }
 
         async function gerarDocumento() {
@@ -163,8 +219,9 @@
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
                 
-                // Pegando a data gerada (ou modificada por você)
-                const valData = document.getElementById('dataExtenso').value;
+                // Pegamos a data do calendário e traduzimos com nossa nova função
+                const dataSelecionada = document.getElementById('dataEscolhida').value;
+                const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
 
                 let pacoteQtd = "";
                 let pacoteQtdExtenso = "";
@@ -195,8 +252,7 @@
                     UF: valUF,
                     CEP: valCEP,
                     CNPJ: valCNPJ,
-                    data: valData, // Enviando a data para o Word
-                    
+                    data: valDataExtenso, // A data lindamente formatada indo para o Word!
                     qtd_cartoes: pacoteQtd,
                     qtd_extenso: pacoteQtdExtenso,
                     valor_cartao: pacoteValor,
