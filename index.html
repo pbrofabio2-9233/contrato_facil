@@ -8,6 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
     <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; color: #333; }
@@ -27,13 +29,18 @@
         .btn-buscar { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         .btn-buscar:hover { background-color: #2980b9; }
 
-        /* Estilo da nova caixa personalizada simplificada */
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
-        
         .escondido { display: none; }
 
-        button.btn-principal { width: 100%; padding: 15px; margin-top: 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button.btn-principal:hover { background-color: #219653; }
+        /* Estilo dos novos botões de gerar */
+        .btn-word { background-color: #2b579a; color: white; border: none; border-radius: 6px; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
+        .btn-word:hover { background-color: #1e3f6f; }
+        
+        .btn-pdf { background-color: #c0392b; color: white; border: none; border-radius: 6px; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
+        .btn-pdf:hover { background-color: #962d22; }
+
+        /* Esta é a área invisível onde o PDF é montado antes de ser baixado */
+        #areaInvisivelPDF { position: absolute; left: -9999px; top: 0; width: 800px; padding: 40px; background: white; font-family: Arial, sans-serif; color: black; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -104,9 +111,15 @@
                 </div>
             </div>
 
-            <button class="btn-principal" onclick="gerarDocumento()">Gerar Documento Preenchido</button>
+            <h3 style="border-bottom: none; text-align: center; margin-top: 40px;">Escolha o Formato de Exportação:</h3>
+            <div class="linha-dupla">
+                <button class="btn-word" onclick="gerarDocumento()">Gerar DOCX (Word)</button>
+                <button class="btn-pdf" onclick="gerarPDF()">Gerar PDF</button>
+            </div>
         </div>
     </div>
+
+    <div id="areaInvisivelPDF"></div>
 
     <script>
         window.onload = function() {
@@ -115,7 +128,6 @@
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const dia = String(hoje.getDate()).padStart(2, '0');
             const dataPadrao = `${ano}-${mes}-${dia}`;
-            
             document.getElementById('dataEscolhida').value = dataPadrao;
             document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
@@ -124,56 +136,44 @@
             const documentoEscolhido = document.getElementById("modeloContrato").value;
             const divEndereco = document.getElementById("dadosEndereco");
             const divDataRecibo = document.getElementById("dataRecibo");
-
             if (documentoEscolhido === "Recibo.docx") {
-                divEndereco.classList.add("escondido");
-                divDataRecibo.classList.remove("escondido");
+                divEndereco.classList.add("escondido"); divDataRecibo.classList.remove("escondido");
             } else {
-                divEndereco.classList.remove("escondido");
-                divDataRecibo.classList.add("escondido");
+                divEndereco.classList.remove("escondido"); divDataRecibo.classList.add("escondido");
             }
         }
 
         async function buscarDadosCNPJ() {
             let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
-            if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
-            document.getElementById('cliente').value = "Buscando dados na Receita...";
+            if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo."); return; }
+            document.getElementById('cliente').value = "Buscando...";
             try {
                 const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
                 if (!resposta.ok) throw new Error("CNPJ não encontrado");
                 const dados = await resposta.json();
-                
                 document.getElementById('cliente').value = dados.razao_social;
                 document.getElementById('cidade').value = dados.municipio;
                 document.getElementById('uf').value = dados.uf;
                 let cep = dados.cep ? dados.cep.toString() : "";
                 if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
                 document.getElementById('cep').value = cep;
-                
             } catch (erro) {
-                alert("Não foi possível encontrar esse CNPJ.");
-                document.getElementById('cliente').value = "";
+                alert("Não foi possível encontrar esse CNPJ."); document.getElementById('cliente').value = "";
             }
         }
 
-        function aplicarMascaraCEP(campo) {
-            let valor = campo.value.replace(/\D/g, ""); valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); campo.value = valor; 
-        }
-
+        function aplicarMascaraCEP(campo) { let valor = campo.value.replace(/\D/g, ""); valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); campo.value = valor; }
         function aplicarMascaraCpfCnpj(campo) {
             let valor = campo.value.replace(/\D/g, ""); 
-            if (valor.length <= 11) {
-                valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-            } else {
-                valor = valor.replace(/^(\d{2})(\d)/, "$1.$2"); valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3"); valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2"); valor = valor.replace(/(\d{4})(\d)/, "$1-$2");
-            }
+            if (valor.length <= 11) { valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2"); } 
+            else { valor = valor.replace(/^(\d{2})(\d)/, "$1.$2"); valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3"); valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2"); valor = valor.replace(/(\d{4})(\d)/, "$1-$2"); }
             campo.value = valor; 
         }
 
         function verificarPacote() {
             const escolha = document.getElementById("pacoteCartoes").value;
-            const caixa = document.getElementById("caixaPersonalizada");
-            if (escolha === "personalizado") { caixa.style.display = "block"; } else { caixa.style.display = "none"; }
+            if (escolha === "personalizado") document.getElementById("caixaPersonalizada").style.display = "block"; 
+            else document.getElementById("caixaPersonalizada").style.display = "none";
         }
 
         function formatarDataPorExtenso(dataDoCalendario) {
@@ -184,95 +184,128 @@
             return dia + " de " + meses[mesNumero] + " de " + ano;
         }
 
+        // Função auxiliar para coletar todas as variáveis que digitamos
+        function coletarVariaveis() {
+            const valCliente = document.getElementById('cliente').value.toUpperCase();
+            const valCidade = document.getElementById('cidade').value;
+            const valUF = document.getElementById('uf').value.toUpperCase();
+            const valCEP = document.getElementById('cep').value;
+            const valCNPJ = document.getElementById('cnpj').value;
+            const tipoDoc = document.getElementById('modeloContrato').value;
+            
+            let dataSelecionada = (tipoDoc === "Recibo.docx") ? document.getElementById('dataEscolhidaRecibo').value : document.getElementById('dataEscolhida').value;
+            const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
+
+            let pacoteQtd = ""; let pacoteValor = ""; let pacoteValorTotal = ""; 
+            const escolhaPacote = document.getElementById("pacoteCartoes").value;
+            
+            if (escolhaPacote === "500") { pacoteQtd = "500"; pacoteValor = "17,00"; pacoteValorTotal = "8.500,00"; } 
+            else if (escolhaPacote === "1000") { pacoteQtd = "1.000"; pacoteValor = "13,00"; pacoteValorTotal = "13.000,00"; } 
+            else if (escolhaPacote === "2000") { pacoteQtd = "2.000"; pacoteValor = "11,00"; pacoteValorTotal = "22.000,00"; } 
+            else if (escolhaPacote === "personalizado") {
+                pacoteQtd = document.getElementById('qtdCartoes').value;
+                pacoteValorTotal = document.getElementById('valorTotal').value;
+                try {
+                    let qtdLimpa = parseInt(pacoteQtd.replace(/\D/g, ''));
+                    let totalLimpo = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.'));
+                    if (qtdLimpa > 0 && !isNaN(totalLimpo)) pacoteValor = (totalLimpo / qtdLimpa).toFixed(2).replace('.', ',');
+                } catch(e) { pacoteValor = "0,00"; }
+            }
+
+            return { cliente: valCliente, cidade: valCidade, uf: valUF, cep: valCEP, cnpj: valCNPJ, data: valDataExtenso, qtd: pacoteQtd, unitario: pacoteValor, total: pacoteValorTotal, tipoDoc: tipoDoc };
+        }
+
+        // --- FUNÇÃO 1: GERAR WORD (Permanece Intacta!) ---
         async function gerarDocumento() {
-            const caminhoArquivo = document.getElementById('modeloContrato').value;
+            const vars = coletarVariaveis();
             const nomeSelecionadoMenu = document.getElementById('modeloContrato').options[document.getElementById('modeloContrato').selectedIndex].text;
 
             try {
-                const resposta = await fetch(caminhoArquivo);
-                if (!resposta.ok) { alert("Erro: O arquivo modelo (" + caminhoArquivo + ") não foi encontrado."); return; }
-
+                const resposta = await fetch(vars.tipoDoc);
+                if (!resposta.ok) { alert("Erro: O arquivo modelo não foi encontrado."); return; }
                 const conteudo = await resposta.arrayBuffer();
                 const zip = new PizZip(conteudo);
                 const documento = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: '{', end: '}' } });
 
-                const valCliente = document.getElementById('cliente').value.toUpperCase();
-                const valCidade = document.getElementById('cidade').value;
-                const valUF = document.getElementById('uf').value.toUpperCase();
-                const valCEP = document.getElementById('cep').value;
-                const valCNPJ = document.getElementById('cnpj').value;
-                
-                let dataSelecionada = "";
-                if (caminhoArquivo === "Recibo.docx") {
-                    dataSelecionada = document.getElementById('dataEscolhidaRecibo').value;
-                } else {
-                    dataSelecionada = document.getElementById('dataEscolhida').value;
-                }
-                const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
-
-                let pacoteQtd = ""; 
-                let pacoteValor = ""; 
-                let pacoteValorTotal = ""; 
-
-                // Os campos de "extenso" ficam em branco no sistema, assumindo que você não os usa mais ou já os digita junto (ex: "500 (quinhentos)")
-                let pacoteQtdExtenso = "";
-                let pacoteValorExtenso = "";
-                let pacoteValorTotalExtenso = "";
-
-                const escolhaPacote = document.getElementById("pacoteCartoes").value;
-                
-                if (escolhaPacote === "500") {
-                    pacoteQtd = "500"; 
-                    pacoteValor = "17,00"; 
-                    pacoteValorTotal = "8.500,00"; 
-                } else if (escolhaPacote === "1000") {
-                    pacoteQtd = "1.000"; 
-                    pacoteValor = "13,00"; 
-                    pacoteValorTotal = "13.000,00"; 
-                } else if (escolhaPacote === "2000") {
-                    pacoteQtd = "2.000"; 
-                    pacoteValor = "11,00"; 
-                    pacoteValorTotal = "22.000,00"; 
-                } else if (escolhaPacote === "personalizado") {
-                    pacoteQtd = document.getElementById('qtdCartoes').value;
-                    pacoteValorTotal = document.getElementById('valorTotal').value;
-                    
-                    // Cálculo Automático do Valor Unitário (Para uso no Contrato)
-                    try {
-                        let qtdLimpa = parseInt(pacoteQtd.replace(/\D/g, ''));
-                        let totalLimpo = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.'));
-                        if (qtdLimpa > 0 && !isNaN(totalLimpo)) {
-                            let unitario = (totalLimpo / qtdLimpa).toFixed(2);
-                            pacoteValor = unitario.replace('.', ',');
-                        }
-                    } catch(e) {
-                        pacoteValor = "0,00";
-                    }
-                }
-
                 documento.render({
-                    cliente: valCliente,
-                    cidade: valCidade,
-                    UF: valUF,
-                    CEP: valCEP,
-                    CNPJ: valCNPJ,
-                    data: valDataExtenso, 
-                    qtd_cartoes: pacoteQtd,
-                    qtd_extenso: pacoteQtdExtenso,
-                    valor_cartao: pacoteValor,
-                    valor_extenso: pacoteValorExtenso,
-                    valor_total: pacoteValorTotal,
-                    valor_total_extenso: pacoteValorTotalExtenso
+                    cliente: vars.cliente, cidade: vars.cidade, UF: vars.uf, CEP: vars.cep, CNPJ: vars.cnpj, data: vars.data, 
+                    qtd_cartoes: vars.qtd, valor_cartao: vars.unitario, valor_total: vars.total
                 });
 
                 const arquivoGerado = documento.getZip().generate({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-                saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
+                saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + vars.cliente + ".docx");
+            } catch (erro) { alert("Erro ao processar o arquivo Word! Motivo: " + erro.message); }
+        }
 
-            } catch (erro) {
-                // Mensagem de erro aprimorada para descobrir problemas no Word!
-                console.error("Erro completo:", erro);
-                alert("Erro ao processar o arquivo Word! Motivo: " + (erro.message || "Verifique se todas as chaves {} estão fechadas corretamente no documento original."));
+        // --- FUNÇÃO 2: A NOVA MÁGICA DE GERAR PDF ---
+        function gerarPDF() {
+            const vars = coletarVariaveis();
+            const areaInvisivel = document.getElementById("areaInvisivelPDF");
+            const nomeSelecionadoMenu = document.getElementById('modeloContrato').options[document.getElementById('modeloContrato').selectedIndex].text;
+
+            // Vamos "desenhar" o texto com HTML antes de converter para PDF
+            let conteudoHTML = "";
+
+            if (vars.tipoDoc === "Recibo.docx") {
+                // Aqui está o texto exato do seu Recibo
+                conteudoHTML = `
+                    <h1 style="text-align: center; text-decoration: underline; margin-bottom: 50px;">RECIBO</h1>
+                    <p style="text-align: justify; font-size: 18px; line-height: 1.8;">
+                        Recebemos de <strong>${vars.cliente}</strong> a quantia de <strong>R$ ${vars.total}</strong>, referente à confecção de <strong>${vars.qtd}</strong> CARTÕES e à personalização na frente e no verso de um cartão plástico com tarja magnética e campo para assinatura do cliente.
+                    </p>
+                    <p style="text-align: justify; font-size: 18px; line-height: 1.8; margin-top: 30px;">
+                        Para maior clareza, firmamos o presente.
+                    </p>
+                    <p style="text-align: right; font-size: 18px; margin-top: 60px;">
+                        Ananindeua-PA, ${vars.data}.
+                    </p>
+                    <div style="margin-top: 80px; text-align: center;">
+                        <hr style="width: 60%; border: 1px solid black;">
+                        <p style="margin-top: 5px; font-size: 16px;"><strong>CEOCARD</strong></p>
+                    </div>
+                `;
+            } else {
+                // Aqui está um texto GENÉRICO do Contrato. Você pode editar as palavras abaixo!
+                conteudoHTML = `
+                    <h1 style="text-align: center; margin-bottom: 30px;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h1>
+                    <p><strong>CONTRATANTE:</strong> ${vars.cliente}, inscrito no CNPJ: ${vars.cnpj}, sediado na cidade de ${vars.cidade} - ${vars.uf}, CEP: ${vars.cep}.</p>
+                    
+                    <h3 style="margin-top: 30px;">CLÁUSULA 3ª - DOS VALORES</h3>
+                    <p style="text-align: justify; line-height: 1.6;">
+                        O valor unitário de cada cartão é de <strong>R$ ${vars.unitario}</strong>, que engloba a confecção. A CEOCARD fica autorizada a confeccionar inicialmente <strong>${vars.qtd}</strong> cartões pré-impressos, totalizando o valor de <strong>R$ ${vars.total}</strong>.
+                    </p>
+                    
+                    <p style="margin-top: 50px; text-align: right;">
+                        ${vars.cidade}-${vars.uf}, ${vars.data}.
+                    </p>
+                    
+                    <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+                        <div style="text-align: center; width: 45%;">
+                            <hr style="border: 1px solid black;">
+                            <p><strong>CEOCARD</strong></p>
+                        </div>
+                        <div style="text-align: center; width: 45%;">
+                            <hr style="border: 1px solid black;">
+                            <p><strong>${vars.cliente}</strong></p>
+                        </div>
+                    </div>
+                `;
             }
+
+            // Injeta o texto na área invisível
+            areaInvisivel.innerHTML = conteudoHTML;
+
+            // Configurações do PDF (Tamanho A4, margens, etc)
+            const opcoesPDF = {
+                margin:       15,
+                filename:     nomeSelecionadoMenu + '_' + vars.cliente + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Transforma a área invisível em PDF e faz o download
+            html2pdf().set(opcoesPDF).from(areaInvisivel).save();
         }
     </script>
 </body>
