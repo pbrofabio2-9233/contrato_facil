@@ -14,13 +14,7 @@
         .wrapper { max-width: 750px; margin: 0 auto; }
         .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* ESTILO NOVO: Configuração da Logo */
-        .logo-app { 
-            display: block; 
-            margin: 0 auto 20px auto; /* Centraliza a imagem e dá um espaço embaixo */
-            max-width: 200px; /* Evita que a logo fique gigante na tela */
-            height: auto; 
-        }
+        .logo-app { display: block; margin: 0 auto 20px auto; max-width: 200px; height: auto; }
 
         h2 { text-align: center; color: #e65c00; margin-bottom: 20px; margin-top: 0; }
         h3 { color: #2c3e50; font-size: 16px; margin-top: 25px; border-bottom: 2px solid #e65c00; padding-bottom: 5px; }
@@ -49,7 +43,7 @@
     <div class="wrapper">
         <div class="container">
             
-            <img src="Ativo_12Logo_Ceocard.png" alt="Logo CEOCARD" class="logo-app">
+            <img src="logo.png" alt="Logo CEOCARD" class="logo-app">
 
             <h2>Gerador de Documentos</h2>
             
@@ -225,6 +219,7 @@
                 let pacoteValor = ""; 
                 let pacoteValorTotal = ""; 
 
+                // Devolvendo a inteligência do extenso para a memória do sistema
                 let pacoteQtdExtenso = "";
                 let pacoteValorExtenso = "";
                 let pacoteValorTotalExtenso = "";
@@ -233,20 +228,34 @@
                 
                 if (escolhaPacote === "500") {
                     pacoteQtd = "500"; 
+                    pacoteQtdExtenso = "quinhentos";
                     pacoteValor = "17,00"; 
+                    pacoteValorExtenso = "dezessete reais";
                     pacoteValorTotal = "8.500,00"; 
+                    pacoteValorTotalExtenso = "oito mil e quinhentos reais";
                 } else if (escolhaPacote === "1000") {
                     pacoteQtd = "1.000"; 
+                    pacoteQtdExtenso = "um mil";
                     pacoteValor = "13,00"; 
+                    pacoteValorExtenso = "treze reais";
                     pacoteValorTotal = "13.000,00"; 
+                    pacoteValorTotalExtenso = "treze mil reais";
                 } else if (escolhaPacote === "2000") {
                     pacoteQtd = "2.000"; 
+                    pacoteQtdExtenso = "dois mil";
                     pacoteValor = "11,00"; 
+                    pacoteValorExtenso = "onze reais";
                     pacoteValorTotal = "22.000,00"; 
+                    pacoteValorTotalExtenso = "vinte e dois mil reais";
                 } else if (escolhaPacote === "personalizado") {
                     pacoteQtd = document.getElementById('qtdCartoes').value;
                     pacoteValorTotal = document.getElementById('valorTotal').value;
                     
+                    // Como a tela de personalizado é limpa, deixamos o extenso em branco. 
+                    pacoteQtdExtenso = "";
+                    pacoteValorExtenso = "";
+                    pacoteValorTotalExtenso = "";
+
                     try {
                         let qtdLimpa = parseInt(pacoteQtd.replace(/\D/g, ''));
                         let totalLimpo = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.'));
