@@ -29,7 +29,6 @@
 
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
         
-        /* Uma nova classe para esconder elementos suavemente */
         .escondido { display: none; }
 
         button.btn-principal { width: 100%; padding: 15px; margin-top: 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -50,15 +49,13 @@
 
             <h3>Dados do Cliente</h3>
             
-            <div id="dadosCompletos">
-                <div class="linha-dupla">
-                    <div style="flex: 2;">
-                        <label>CPF / CNPJ:</label>
-                        <input type="text" id="cnpj" placeholder="Digite para buscar..." maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
-                    </div>
-                    <div style="flex: 1;">
-                        <button class="btn-buscar" onclick="buscarDadosCNPJ()">🔍 Buscar</button>
-                    </div>
+            <div class="linha-dupla">
+                <div style="flex: 2;">
+                    <label>CPF / CNPJ:</label>
+                    <input type="text" id="cnpj" placeholder="Digite para buscar..." maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
+                </div>
+                <div style="flex: 1;">
+                    <button class="btn-buscar" onclick="buscarDadosCNPJ()">🔍 Buscar</button>
                 </div>
             </div>
 
@@ -128,21 +125,16 @@
             document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
 
-        // --- NOVA FUNÇÃO: Esconde/Mostra campos dependendo se é Contrato ou Recibo ---
+        // --- Função Corrigida: Esconde apenas Endereço/CEP ---
         function adaptarTela() {
             const documentoEscolhido = document.getElementById("modeloContrato").value;
-            const divCNPJ = document.getElementById("dadosCompletos");
             const divEndereco = document.getElementById("dadosEndereco");
             const divDataRecibo = document.getElementById("dataRecibo");
 
             if (documentoEscolhido === "Recibo.docx") {
-                // Esconde CNPJ e Endereço, mostra a data separada
-                divCNPJ.classList.add("escondido");
                 divEndereco.classList.add("escondido");
                 divDataRecibo.classList.remove("escondido");
             } else {
-                // Mostra tudo padrão do contrato
-                divCNPJ.classList.remove("escondido");
                 divEndereco.classList.remove("escondido");
                 divDataRecibo.classList.add("escondido");
             }
@@ -156,12 +148,16 @@
                 const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
                 if (!resposta.ok) throw new Error("CNPJ não encontrado");
                 const dados = await resposta.json();
+                
                 document.getElementById('cliente').value = dados.razao_social;
+                
+                // Preenche o resto silenciosamente (mesmo se estiverem escondidos, o valor fica salvo!)
                 document.getElementById('cidade').value = dados.municipio;
                 document.getElementById('uf').value = dados.uf;
                 let cep = dados.cep ? dados.cep.toString() : "";
                 if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
                 document.getElementById('cep').value = cep;
+                
             } catch (erro) {
                 alert("Não foi possível encontrar esse CNPJ.");
                 document.getElementById('cliente').value = "";
@@ -214,7 +210,6 @@
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
                 
-                // Define qual calendário usar dependendo da tela visível
                 let dataSelecionada = "";
                 if (caminhoArquivo === "Recibo.docx") {
                     dataSelecionada = document.getElementById('dataEscolhidaRecibo').value;
@@ -229,7 +224,6 @@
 
                 const escolhaPacote = document.getElementById("pacoteCartoes").value;
                 
-                // A MÁGICA DOS TOTAIS
                 if (escolhaPacote === "500") {
                     pacoteQtd = "500"; pacoteQtdExtenso = "quinhentos";
                     pacoteValor = "17,00"; pacoteValorExtenso = "dezessete reais";
@@ -252,7 +246,6 @@
                 }
 
                 documento.render({
-                    // Etiquetas que o Contrato usa
                     cliente: valCliente,
                     cidade: valCidade,
                     UF: valUF,
@@ -263,8 +256,6 @@
                     qtd_extenso: pacoteQtdExtenso,
                     valor_cartao: pacoteValor,
                     valor_extenso: pacoteValorExtenso,
-                    
-                    // Novas etiquetas exclusivas que o Recibo vai usar!
                     valor_total: pacoteValorTotal,
                     valor_total_extenso: pacoteValorTotalExtenso
                 });
