@@ -13,7 +13,16 @@
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; color: #333; }
         .wrapper { max-width: 750px; margin: 0 auto; }
         .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #e65c00; margin-bottom: 20px; }
+        
+        /* ESTILO NOVO: Configuração da Logo */
+        .logo-app { 
+            display: block; 
+            margin: 0 auto 20px auto; /* Centraliza a imagem e dá um espaço embaixo */
+            max-width: 200px; /* Evita que a logo fique gigante na tela */
+            height: auto; 
+        }
+
+        h2 { text-align: center; color: #e65c00; margin-bottom: 20px; margin-top: 0; }
         h3 { color: #2c3e50; font-size: 16px; margin-top: 25px; border-bottom: 2px solid #e65c00; padding-bottom: 5px; }
         label { font-weight: bold; display: block; margin-top: 15px; font-size: 14px; color: #555; }
         
@@ -27,7 +36,6 @@
         .btn-buscar { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         .btn-buscar:hover { background-color: #2980b9; }
 
-        /* Estilo da nova caixa personalizada simplificada */
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
         
         .escondido { display: none; }
@@ -40,7 +48,9 @@
 
     <div class="wrapper">
         <div class="container">
+            
             <img src="Ativo_12Logo_Ceocard.png" alt="Logo CEOCARD" class="logo-app">
+
             <h2>Gerador de Documentos</h2>
             
             <label>Selecione o Modelo do Documento:</label>
@@ -215,7 +225,6 @@
                 let pacoteValor = ""; 
                 let pacoteValorTotal = ""; 
 
-                // Os campos de "extenso" ficam em branco no sistema, assumindo que você não os usa mais ou já os digita junto (ex: "500 (quinhentos)")
                 let pacoteQtdExtenso = "";
                 let pacoteValorExtenso = "";
                 let pacoteValorTotalExtenso = "";
@@ -238,7 +247,6 @@
                     pacoteQtd = document.getElementById('qtdCartoes').value;
                     pacoteValorTotal = document.getElementById('valorTotal').value;
                     
-                    // Cálculo Automático do Valor Unitário (Para uso no Contrato)
                     try {
                         let qtdLimpa = parseInt(pacoteQtd.replace(/\D/g, ''));
                         let totalLimpo = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.'));
@@ -270,7 +278,6 @@
                 saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
 
             } catch (erro) {
-                // Mensagem de erro aprimorada para descobrir problemas no Word!
                 console.error("Erro completo:", erro);
                 alert("Erro ao processar o arquivo Word! Motivo: " + (erro.message || "Verifique se todas as chaves {} estão fechadas corretamente no documento original."));
             }
