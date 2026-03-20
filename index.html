@@ -10,32 +10,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
 
     <style>
-        /* Fundo da página e fonte */
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; color: #333; }
-        
-        /* A mágica do layout: Centraliza e impede de esticar em monitores grandes */
         .wrapper { max-width: 750px; margin: 0 auto; }
-        
-        /* O "Cartão" branco onde ficam os campos */
         .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
         h2 { text-align: center; color: #e65c00; margin-bottom: 20px; }
         h3 { color: #2c3e50; font-size: 16px; margin-top: 25px; border-bottom: 2px solid #e65c00; padding-bottom: 5px; }
         label { font-weight: bold; display: block; margin-top: 15px; font-size: 14px; color: #555; }
         
-        /* Estilo das caixas de texto */
         input[type="text"], select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background-color: #fafafa; font-size: 15px; transition: 0.3s; }
         input[type="text"]:focus, select:focus { border-color: #e65c00; outline: none; background-color: #fff; }
         .maiusculo { text-transform: uppercase; }
         
-        /* Organiza campos lado a lado */
         .linha-dupla { display: flex; gap: 15px; }
         .linha-dupla div { flex: 1; }
         
-        /* Esconde a caixa personalizada por padrão */
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
         
-        /* Botão principal */
         button { width: 100%; padding: 15px; margin-top: 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background-color: #219653; }
     </style>
@@ -66,6 +56,9 @@
                 <div><label>CPF / CNPJ:</label><input type="text" id="cnpj" placeholder="000.000.000-00" maxlength="18" oninput="aplicarMascaraCpfCnpj(this)"></div>
             </div>
 
+            <label>Data por Extenso:</label>
+            <input type="text" id="dataExtenso" placeholder="Ex: 19 de março de 2026">
+
             <h3>Configuração dos Cartões</h3>
             <label>Escolha o Pacote:</label>
             <select id="pacoteCartoes" onchange="verificarPacote()">
@@ -93,6 +86,26 @@
     </div>
 
     <script>
+        // --- NOVA FUNÇÃO: Descobrir e preencher a data de hoje ---
+        function preencherDataAutomaticamente() {
+            // Criamos a lista de meses para traduzir o número em palavra
+            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            
+            const hoje = new Date(); // Pega a data e hora atual do aparelho
+            const dia = hoje.getDate();
+            const mes = meses[hoje.getMonth()]; // Pega o mês e traduz usando nossa lista
+            const ano = hoje.getFullYear();
+
+            // Monta a frase "Dia de Mês de Ano"
+            const dataFormatada = dia + " de " + mes + " de " + ano;
+            
+            // Joga essa frase dentro do campo de texto
+            document.getElementById('dataExtenso').value = dataFormatada;
+        }
+
+        // Essa linha avisa o navegador: "Quando a página terminar de carregar, execute a função da data"
+        window.onload = preencherDataAutomaticamente;
+
         function aplicarMascaraCEP(campo) {
             let valor = campo.value.replace(/\D/g, ""); 
             valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); 
@@ -114,12 +127,10 @@
             campo.value = valor; 
         }
 
-        // --- FUNÇÃO: Mostra ou esconde a caixa baseada na escolha ---
         function verificarPacote() {
             const escolha = document.getElementById("pacoteCartoes").value;
             const caixa = document.getElementById("caixaPersonalizada");
             
-            // Se escolheu personalizado, mostra a caixa. Senão, esconde.
             if (escolha === "personalizado") {
                 caixa.style.display = "block";
             } else {
@@ -146,20 +157,20 @@
                     delimiters: { start: '{', end: '}' } 
                 });
 
-                // Coletando Dados do Cliente
                 const valCliente = document.getElementById('cliente').value.toUpperCase();
                 const valCidade = document.getElementById('cidade').value;
                 const valUF = document.getElementById('uf').value.toUpperCase();
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
                 
-                // Variáveis vazias para os cartões
+                // Pegando a data gerada (ou modificada por você)
+                const valData = document.getElementById('dataExtenso').value;
+
                 let pacoteQtd = "";
                 let pacoteQtdExtenso = "";
                 let pacoteValor = "";
                 let pacoteValorExtenso = "";
 
-                // A MÁGICA INVISÍVEL: O sistema preenche sozinho na memória
                 const escolhaPacote = document.getElementById("pacoteCartoes").value;
                 
                 if (escolhaPacote === "500") {
@@ -172,20 +183,19 @@
                     pacoteQtd = "2.000"; pacoteQtdExtenso = "Dois Mil";
                     pacoteValor = "11,00"; pacoteValorExtenso = "Onze Reais";
                 } else if (escolhaPacote === "personalizado") {
-                    // Se for personalizado, ele puxa das caixas que o usuário digitou
                     pacoteQtd = document.getElementById('qtdCartoes').value;
                     pacoteQtdExtenso = document.getElementById('qtdExtenso').value;
                     pacoteValor = document.getElementById('valorCartao').value;
                     pacoteValorExtenso = document.getElementById('valorExtenso').value;
                 }
 
-                // Passando os dados para o Word substituir
                 documento.render({
                     cliente: valCliente,
                     cidade: valCidade,
                     UF: valUF,
                     CEP: valCEP,
                     CNPJ: valCNPJ,
+                    data: valData, // Enviando a data para o Word
                     
                     qtd_cartoes: pacoteQtd,
                     qtd_extenso: pacoteQtdExtenso,
