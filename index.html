@@ -27,6 +27,7 @@
         .btn-buscar { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         .btn-buscar:hover { background-color: #2980b9; }
 
+        /* Estilo da nova caixa personalizada simplificada */
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
         
         .escondido { display: none; }
@@ -83,29 +84,23 @@
             <label>Escolha o Pacote:</label>
             <select id="pacoteCartoes" onchange="verificarPacote()">
                 <option value="0">Selecione...</option>
-                <option value="500">500 unidades (R$ 17,00/un)</option>
-                <option value="1000">1.000 unidades (R$ 13,00/un)</option>
-                <option value="2000">2.000 unidades (R$ 11,00/un)</option>
+                <option value="500">500 unidades (R$ 17,00/un) - Total: R$ 8.500,00</option>
+                <option value="1000">1.000 unidades (R$ 13,00/un) - Total: R$ 13.000,00</option>
+                <option value="2000">2.000 unidades (R$ 11,00/un) - Total: R$ 22.000,00</option>
                 <option value="personalizado">Personalizado (Digitar Manualmente)</option>
             </select>
 
             <div id="caixaPersonalizada">
-                <label style="color: #e65c00; text-align: center; margin-top: 0;">Preencha os dados personalizados:</label>
+                <label style="color: #e65c00; text-align: center; margin-top: 0; margin-bottom: 10px;">Pacote Personalizado</label>
                 <div class="linha-dupla">
-                    <div><label>Qtd (Número):</label><input type="text" id="qtdCartoes" placeholder="Ex: 350"></div>
-                    <div><label>Qtd (Extenso):</label><input type="text" id="qtdExtenso" placeholder="Ex: trezentos e cinquenta"></div>
-                </div>
-                
-                <label style="font-size: 12px; color: gray; margin-bottom: -10px;">Para Contrato:</label>
-                <div class="linha-dupla">
-                    <div><label>Valor Unitário (R$):</label><input type="text" id="valorCartao" placeholder="Ex: 20,00"></div>
-                    <div><label>Unitário (Extenso):</label><input type="text" id="valorExtenso" placeholder="Ex: vinte reais"></div>
-                </div>
-
-                <label style="font-size: 12px; color: gray; margin-bottom: -10px;">Para Recibo:</label>
-                <div class="linha-dupla">
-                    <div><label>Valor Total (R$):</label><input type="text" id="valorTotal" placeholder="Ex: 7.000,00"></div>
-                    <div><label>Total (Extenso):</label><input type="text" id="valorTotalExtenso" placeholder="Ex: sete mil reais"></div>
+                    <div>
+                        <label>Quantidade de Cartões:</label>
+                        <input type="text" id="qtdCartoes" placeholder="Ex: 350">
+                    </div>
+                    <div>
+                        <label>Valor Total (R$):</label>
+                        <input type="text" id="valorTotal" placeholder="Ex: 5.500,00">
+                    </div>
                 </div>
             </div>
 
@@ -125,7 +120,6 @@
             document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
 
-        // --- Função Corrigida: Esconde apenas Endereço/CEP ---
         function adaptarTela() {
             const documentoEscolhido = document.getElementById("modeloContrato").value;
             const divEndereco = document.getElementById("dadosEndereco");
@@ -150,8 +144,6 @@
                 const dados = await resposta.json();
                 
                 document.getElementById('cliente').value = dados.razao_social;
-                
-                // Preenche o resto silenciosamente (mesmo se estiverem escondidos, o valor fica salvo!)
                 document.getElementById('cidade').value = dados.municipio;
                 document.getElementById('uf').value = dados.uf;
                 let cep = dados.cep ? dados.cep.toString() : "";
@@ -198,7 +190,7 @@
 
             try {
                 const resposta = await fetch(caminhoArquivo);
-                if (!resposta.ok) { alert("Erro: O arquivo modelo não foi encontrado."); return; }
+                if (!resposta.ok) { alert("Erro: O arquivo modelo (" + caminhoArquivo + ") não foi encontrado."); return; }
 
                 const conteudo = await resposta.arrayBuffer();
                 const zip = new PizZip(conteudo);
@@ -218,31 +210,44 @@
                 }
                 const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
 
-                let pacoteQtd = ""; let pacoteQtdExtenso = "";
-                let pacoteValor = ""; let pacoteValorExtenso = "";
-                let pacoteValorTotal = ""; let pacoteValorTotalExtenso = "";
+                let pacoteQtd = ""; 
+                let pacoteValor = ""; 
+                let pacoteValorTotal = ""; 
+
+                // Os campos de "extenso" ficam em branco no sistema, assumindo que você não os usa mais ou já os digita junto (ex: "500 (quinhentos)")
+                let pacoteQtdExtenso = "";
+                let pacoteValorExtenso = "";
+                let pacoteValorTotalExtenso = "";
 
                 const escolhaPacote = document.getElementById("pacoteCartoes").value;
                 
                 if (escolhaPacote === "500") {
-                    pacoteQtd = "500"; pacoteQtdExtenso = "quinhentos";
-                    pacoteValor = "17,00"; pacoteValorExtenso = "dezessete reais";
-                    pacoteValorTotal = "8.500,00"; pacoteValorTotalExtenso = "oito mil e quinhentos reais";
+                    pacoteQtd = "500"; 
+                    pacoteValor = "17,00"; 
+                    pacoteValorTotal = "8.500,00"; 
                 } else if (escolhaPacote === "1000") {
-                    pacoteQtd = "1.000"; pacoteQtdExtenso = "mil";
-                    pacoteValor = "13,00"; pacoteValorExtenso = "treze reais";
-                    pacoteValorTotal = "13.000,00"; pacoteValorTotalExtenso = "treze mil reais";
+                    pacoteQtd = "1.000"; 
+                    pacoteValor = "13,00"; 
+                    pacoteValorTotal = "13.000,00"; 
                 } else if (escolhaPacote === "2000") {
-                    pacoteQtd = "2.000"; pacoteQtdExtenso = "dois mil";
-                    pacoteValor = "11,00"; pacoteValorExtenso = "onze reais";
-                    pacoteValorTotal = "22.000,00"; pacoteValorTotalExtenso = "vinte e dois mil reais";
+                    pacoteQtd = "2.000"; 
+                    pacoteValor = "11,00"; 
+                    pacoteValorTotal = "22.000,00"; 
                 } else if (escolhaPacote === "personalizado") {
                     pacoteQtd = document.getElementById('qtdCartoes').value;
-                    pacoteQtdExtenso = document.getElementById('qtdExtenso').value;
-                    pacoteValor = document.getElementById('valorCartao').value;
-                    pacoteValorExtenso = document.getElementById('valorExtenso').value;
                     pacoteValorTotal = document.getElementById('valorTotal').value;
-                    pacoteValorTotalExtenso = document.getElementById('valorTotalExtenso').value;
+                    
+                    // Cálculo Automático do Valor Unitário (Para uso no Contrato)
+                    try {
+                        let qtdLimpa = parseInt(pacoteQtd.replace(/\D/g, ''));
+                        let totalLimpo = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.'));
+                        if (qtdLimpa > 0 && !isNaN(totalLimpo)) {
+                            let unitario = (totalLimpo / qtdLimpa).toFixed(2);
+                            pacoteValor = unitario.replace('.', ',');
+                        }
+                    } catch(e) {
+                        pacoteValor = "0,00";
+                    }
                 }
 
                 documento.render({
@@ -264,8 +269,9 @@
                 saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
 
             } catch (erro) {
-                console.error("Erro ao gerar o documento:", erro);
-                alert("Ocorreu um erro no processamento. Tente novamente.");
+                // Mensagem de erro aprimorada para descobrir problemas no Word!
+                console.error("Erro completo:", erro);
+                alert("Erro ao processar o arquivo Word! Motivo: " + (erro.message || "Verifique se todas as chaves {} estão fechadas corretamente no documento original."));
             }
         }
     </script>
