@@ -24,7 +24,6 @@
         .linha-dupla { display: flex; gap: 15px; align-items: flex-end; }
         .linha-dupla div { flex: 1; }
         
-        /* Estilo para o botãozinho de buscar CNPJ */
         .btn-buscar { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         .btn-buscar:hover { background-color: #2980b9; }
 
@@ -59,17 +58,19 @@
             </div>
 
             <label>Nome do Cliente (Contratante):</label>
-            <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA">
+            <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA / JOÃO DA SILVA">
+
+            <div class="linha-dupla">
+                <div>
+                    <label>CEP (Preenche automático):</label>
+                    <input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)">
+                </div>
+                <div><label>Data do Contrato:</label><input type="date" id="dataEscolhida"></div>
+            </div>
 
             <div class="linha-dupla">
                 <div><label>Cidade:</label><input type="text" id="cidade" placeholder="Ex: Ananindeua"></div>
                 <div><label>UF:</label><input type="text" id="uf" class="maiusculo" placeholder="Ex: PA" maxlength="2"></div>
-            </div>
-
-            <div class="linha-dupla">
-                <div><label>CEP:</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)"></div>
-                
-                <div><label>Data do Contrato:</label><input type="date" id="dataEscolhida"></div>
             </div>
 
             <h3>Configuração dos Cartões</h3>
@@ -99,46 +100,42 @@
     </div>
 
     <script>
-        // --- FUNÇÃO 1: Coloca a data de hoje no calendário logo que a página abre ---
         window.onload = function() {
             const hoje = new Date();
             const ano = hoje.getFullYear();
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const dia = String(hoje.getDate()).padStart(2, '0');
-            
-            // O calendário do HTML exige o formato YYYY-MM-DD
             document.getElementById('dataEscolhida').value = `${ano}-${mes}-${dia}`;
         };
 
-        // --- FUNÇÃO 2: A mágica que busca os dados da Receita Federal ---
+        // --- LÓGICA ATUALIZADA: Busca de CNPJ / Aviso de CPF ---
         async function buscarDadosCNPJ() {
-            // Pega o CNPJ digitado e limpa os pontos e traços
-            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
+            let valorDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
             
-            if (cnpjDigitado.length !== 14) {
-                alert("Por favor, digite um CNPJ completo para buscar.");
+            // Se for CPF (11 números)
+            if (valorDigitado.length === 11) {
+                alert("Proteção de Dados (LGPD): Não é possível buscar nomes de pessoas físicas pelo CPF de forma pública. Por favor, digite o Nome do Cliente manualmente. (Dica: Digite o CEP para preencher a cidade e estado automaticamente!)");
                 return;
             }
 
-            // Avisa o usuário que está buscando
+            // Se não for nem CPF (11) nem CNPJ (14)
+            if (valorDigitado.length !== 14) {
+                alert("Por favor, digite um CNPJ (14 números) ou CPF (11 números) completo.");
+                return;
+            }
+
+            // Se for CNPJ (14 números), faz a busca normalmente
             document.getElementById('cliente').value = "Buscando dados na Receita...";
 
             try {
-                // Acessa o banco de dados gratuito da BrasilAPI
-                const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
-                
-                if (!resposta.ok) {
-                    throw new Error("CNPJ não encontrado");
-                }
+                const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${valorDigitado}`);
+                if (!resposta.ok) throw new Error("CNPJ não encontrado");
 
                 const dados = await resposta.json();
-
-                // Preenche os campos automaticamente!
                 document.getElementById('cliente').value = dados.razao_social;
                 document.getElementById('cidade').value = dados.municipio;
                 document.getElementById('uf').value = dados.uf;
                 
-                // Formata e preenche o CEP
                 let cep = dados.cep ? dados.cep.toString() : "";
                 if(cep.length === 8) {
                     cep = cep.substring(0,5) + "-" + cep.substring(5);
@@ -146,15 +143,40 @@
                 document.getElementById('cep').value = cep;
 
             } catch (erro) {
-                alert("Não foi possível encontrar esse CNPJ. Verifique se o número está correto ou preencha manualmente.");
+                alert("CNPJ não encontrado. Verifique se o número está correto.");
                 document.getElementById('cliente').value = "";
             }
         }
 
+        // --- NOVA FUNÇÃO: Busca de Endereço Automática pelo CEP ---
+        async function buscarCEP(cepDigitado) {
+            let cepLimpo = cepDigitado.replace(/\D/g, "");
+            
+            // Só busca se tiver exatamente 8 números (um CEP completo)
+            if (cepLimpo.length === 8) {
+                try {
+                    const resposta = await fetch(`https://brasilapi.com.br/api/cep/v1/${cepLimpo}`);
+                    if (!resposta.ok) return; // Se der erro, simplesmente ignora e não preenche nada
+                    
+                    const dados = await resposta.json();
+                    document.getElementById('cidade').value = dados.city;
+                    document.getElementById('uf').value = dados.state;
+                } catch (erro) {
+                    console.log("Erro ao buscar CEP:", erro);
+                }
+            }
+        }
+
+        // --- ATUALIZAÇÃO: A máscara do CEP agora aciona a busca quando atinge 9 caracteres (00000-000) ---
         function aplicarMascaraCEP(campo) {
             let valor = campo.value.replace(/\D/g, ""); 
             valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); 
             campo.value = valor; 
+
+            // Se o campo ficar completinho (9 caracteres contando o traço), ele busca!
+            if (valor.length === 9) {
+                buscarCEP(valor);
+            }
         }
 
         function aplicarMascaraCpfCnpj(campo) {
@@ -182,12 +204,11 @@
             }
         }
 
-        // --- FUNÇÃO 3: Traduz a data do calendário (YYYY-MM-DD) para Extenso ---
         function formatarDataPorExtenso(dataDoCalendario) {
             if (!dataDoCalendario) return "";
-            const partes = dataDoCalendario.split('-'); // Corta a data no traço
+            const partes = dataDoCalendario.split('-'); 
             const ano = partes[0];
-            const mesNumero = parseInt(partes[1]) - 1; // Ajusta o mês (Janeiro é 0 no JS)
+            const mesNumero = parseInt(partes[1]) - 1; 
             const dia = partes[2];
             const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
             
@@ -219,7 +240,6 @@
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
                 
-                // Pegamos a data do calendário e traduzimos com nossa nova função
                 const dataSelecionada = document.getElementById('dataEscolhida').value;
                 const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
 
@@ -252,7 +272,7 @@
                     UF: valUF,
                     CEP: valCEP,
                     CNPJ: valCNPJ,
-                    data: valDataExtenso, // A data lindamente formatada indo para o Word!
+                    data: valDataExtenso, 
                     qtd_cartoes: pacoteQtd,
                     qtd_extenso: pacoteQtdExtenso,
                     valor_cartao: pacoteValor,
