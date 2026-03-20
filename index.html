@@ -24,12 +24,14 @@
         .linha-dupla { display: flex; gap: 15px; align-items: flex-end; }
         .linha-dupla div { flex: 1; }
         
-        /* Estilo para o botãozinho de buscar CNPJ */
         .btn-buscar { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         .btn-buscar:hover { background-color: #2980b9; }
 
         #caixaPersonalizada { display: none; background-color: #fff3e6; padding: 20px; border: 1px dashed #e65c00; border-radius: 8px; margin-top: 15px; }
         
+        /* Uma nova classe para esconder elementos suavemente */
+        .escondido { display: none; }
+
         button.btn-principal { width: 100%; padding: 15px; margin-top: 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button.btn-principal:hover { background-color: #219653; }
     </style>
@@ -41,44 +43,52 @@
             <h2>Gerador de Documentos</h2>
             
             <label>Selecione o Modelo do Documento:</label>
-            <select id="modeloContrato">
+            <select id="modeloContrato" onchange="adaptarTela()">
                 <option value="Contrato_ceocard.docx">Contrato CEOCARD</option>
                 <option value="Recibo.docx">Recibo</option>
             </select>
 
             <h3>Dados do Cliente</h3>
             
-            <div class="linha-dupla">
-                <div style="flex: 2;">
-                    <label>CPF / CNPJ:</label>
-                    <input type="text" id="cnpj" placeholder="Digite para buscar..." maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
-                </div>
-                <div style="flex: 1;">
-                    <button class="btn-buscar" onclick="buscarDadosCNPJ()">🔍 Buscar</button>
+            <div id="dadosCompletos">
+                <div class="linha-dupla">
+                    <div style="flex: 2;">
+                        <label>CPF / CNPJ:</label>
+                        <input type="text" id="cnpj" placeholder="Digite para buscar..." maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
+                    </div>
+                    <div style="flex: 1;">
+                        <button class="btn-buscar" onclick="buscarDadosCNPJ()">🔍 Buscar</button>
+                    </div>
                 </div>
             </div>
 
             <label>Nome do Cliente (Contratante):</label>
             <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA">
 
-            <div class="linha-dupla">
-                <div><label>Cidade:</label><input type="text" id="cidade" placeholder="Ex: Ananindeua"></div>
-                <div><label>UF:</label><input type="text" id="uf" class="maiusculo" placeholder="Ex: PA" maxlength="2"></div>
-            </div>
+            <div id="dadosEndereco">
+                <div class="linha-dupla">
+                    <div><label>Cidade:</label><input type="text" id="cidade" placeholder="Ex: Ananindeua"></div>
+                    <div><label>UF:</label><input type="text" id="uf" class="maiusculo" placeholder="Ex: PA" maxlength="2"></div>
+                </div>
 
-            <div class="linha-dupla">
-                <div><label>CEP:</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)"></div>
-                
-                <div><label>Data do Contrato:</label><input type="date" id="dataEscolhida"></div>
+                <div class="linha-dupla">
+                    <div><label>CEP:</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)"></div>
+                    <div><label>Data do Documento:</label><input type="date" id="dataEscolhida"></div>
+                </div>
+            </div>
+            
+            <div id="dataRecibo" class="escondido">
+                <label>Data do Recibo:</label>
+                <input type="date" id="dataEscolhidaRecibo">
             </div>
 
             <h3>Configuração dos Cartões</h3>
             <label>Escolha o Pacote:</label>
             <select id="pacoteCartoes" onchange="verificarPacote()">
                 <option value="0">Selecione...</option>
-                <option value="500">500 unidades - R$ 17,00</option>
-                <option value="1000">1.000 unidades - R$ 13,00</option>
-                <option value="2000">2.000 unidades - R$ 11,00</option>
+                <option value="500">500 unidades (R$ 17,00/un)</option>
+                <option value="1000">1.000 unidades (R$ 13,00/un)</option>
+                <option value="2000">2.000 unidades (R$ 11,00/un)</option>
                 <option value="personalizado">Personalizado (Digitar Manualmente)</option>
             </select>
 
@@ -86,11 +96,19 @@
                 <label style="color: #e65c00; text-align: center; margin-top: 0;">Preencha os dados personalizados:</label>
                 <div class="linha-dupla">
                     <div><label>Qtd (Número):</label><input type="text" id="qtdCartoes" placeholder="Ex: 350"></div>
-                    <div><label>Qtd (Extenso):</label><input type="text" id="qtdExtenso" placeholder="Ex: Trezentos e Cinquenta"></div>
+                    <div><label>Qtd (Extenso):</label><input type="text" id="qtdExtenso" placeholder="Ex: trezentos e cinquenta"></div>
                 </div>
+                
+                <label style="font-size: 12px; color: gray; margin-bottom: -10px;">Para Contrato:</label>
                 <div class="linha-dupla">
                     <div><label>Valor Unitário (R$):</label><input type="text" id="valorCartao" placeholder="Ex: 20,00"></div>
-                    <div><label>Valor (Extenso):</label><input type="text" id="valorExtenso" placeholder="Ex: Vinte Reais"></div>
+                    <div><label>Unitário (Extenso):</label><input type="text" id="valorExtenso" placeholder="Ex: vinte reais"></div>
+                </div>
+
+                <label style="font-size: 12px; color: gray; margin-bottom: -10px;">Para Recibo:</label>
+                <div class="linha-dupla">
+                    <div><label>Valor Total (R$):</label><input type="text" id="valorTotal" placeholder="Ex: 7.000,00"></div>
+                    <div><label>Total (Extenso):</label><input type="text" id="valorTotalExtenso" placeholder="Ex: sete mil reais"></div>
                 </div>
             </div>
 
@@ -99,75 +117,67 @@
     </div>
 
     <script>
-        // --- FUNÇÃO 1: Coloca a data de hoje no calendário logo que a página abre ---
         window.onload = function() {
             const hoje = new Date();
             const ano = hoje.getFullYear();
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const dia = String(hoje.getDate()).padStart(2, '0');
+            const dataPadrao = `${ano}-${mes}-${dia}`;
             
-            // O calendário do HTML exige o formato YYYY-MM-DD
-            document.getElementById('dataEscolhida').value = `${ano}-${mes}-${dia}`;
+            document.getElementById('dataEscolhida').value = dataPadrao;
+            document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
 
-        // --- FUNÇÃO 2: A mágica que busca os dados da Receita Federal ---
-        async function buscarDadosCNPJ() {
-            // Pega o CNPJ digitado e limpa os pontos e traços
-            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
-            
-            if (cnpjDigitado.length !== 14) {
-                alert("Por favor, digite um CNPJ completo para buscar.");
-                return;
+        // --- NOVA FUNÇÃO: Esconde/Mostra campos dependendo se é Contrato ou Recibo ---
+        function adaptarTela() {
+            const documentoEscolhido = document.getElementById("modeloContrato").value;
+            const divCNPJ = document.getElementById("dadosCompletos");
+            const divEndereco = document.getElementById("dadosEndereco");
+            const divDataRecibo = document.getElementById("dataRecibo");
+
+            if (documentoEscolhido === "Recibo.docx") {
+                // Esconde CNPJ e Endereço, mostra a data separada
+                divCNPJ.classList.add("escondido");
+                divEndereco.classList.add("escondido");
+                divDataRecibo.classList.remove("escondido");
+            } else {
+                // Mostra tudo padrão do contrato
+                divCNPJ.classList.remove("escondido");
+                divEndereco.classList.remove("escondido");
+                divDataRecibo.classList.add("escondido");
             }
+        }
 
-            // Avisa o usuário que está buscando
+        async function buscarDadosCNPJ() {
+            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
+            if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
             document.getElementById('cliente').value = "Buscando dados na Receita...";
-
             try {
-                // Acessa o banco de dados gratuito da BrasilAPI
                 const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
-                
-                if (!resposta.ok) {
-                    throw new Error("CNPJ não encontrado");
-                }
-
+                if (!resposta.ok) throw new Error("CNPJ não encontrado");
                 const dados = await resposta.json();
-
-                // Preenche os campos automaticamente!
                 document.getElementById('cliente').value = dados.razao_social;
                 document.getElementById('cidade').value = dados.municipio;
                 document.getElementById('uf').value = dados.uf;
-                
-                // Formata e preenche o CEP
                 let cep = dados.cep ? dados.cep.toString() : "";
-                if(cep.length === 8) {
-                    cep = cep.substring(0,5) + "-" + cep.substring(5);
-                }
+                if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
                 document.getElementById('cep').value = cep;
-
             } catch (erro) {
-                alert("Não foi possível encontrar esse CNPJ. Verifique se o número está correto ou preencha manualmente.");
+                alert("Não foi possível encontrar esse CNPJ.");
                 document.getElementById('cliente').value = "";
             }
         }
 
         function aplicarMascaraCEP(campo) {
-            let valor = campo.value.replace(/\D/g, ""); 
-            valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); 
-            campo.value = valor; 
+            let valor = campo.value.replace(/\D/g, ""); valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); campo.value = valor; 
         }
 
         function aplicarMascaraCpfCnpj(campo) {
             let valor = campo.value.replace(/\D/g, ""); 
             if (valor.length <= 11) {
-                valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-                valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-                valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
             } else {
-                valor = valor.replace(/^(\d{2})(\d)/, "$1.$2");
-                valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-                valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2");
-                valor = valor.replace(/(\d{4})(\d)/, "$1-$2");
+                valor = valor.replace(/^(\d{2})(\d)/, "$1.$2"); valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3"); valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2"); valor = valor.replace(/(\d{4})(\d)/, "$1-$2");
             }
             campo.value = valor; 
         }
@@ -175,22 +185,14 @@
         function verificarPacote() {
             const escolha = document.getElementById("pacoteCartoes").value;
             const caixa = document.getElementById("caixaPersonalizada");
-            if (escolha === "personalizado") {
-                caixa.style.display = "block";
-            } else {
-                caixa.style.display = "none";
-            }
+            if (escolha === "personalizado") { caixa.style.display = "block"; } else { caixa.style.display = "none"; }
         }
 
-        // --- FUNÇÃO 3: Traduz a data do calendário (YYYY-MM-DD) para Extenso ---
         function formatarDataPorExtenso(dataDoCalendario) {
             if (!dataDoCalendario) return "";
-            const partes = dataDoCalendario.split('-'); // Corta a data no traço
-            const ano = partes[0];
-            const mesNumero = parseInt(partes[1]) - 1; // Ajusta o mês (Janeiro é 0 no JS)
-            const dia = partes[2];
+            const partes = dataDoCalendario.split('-'); 
+            const ano = partes[0]; const mesNumero = parseInt(partes[1]) - 1; const dia = partes[2];
             const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-            
             return dia + " de " + meses[mesNumero] + " de " + ano;
         }
 
@@ -200,18 +202,11 @@
 
             try {
                 const resposta = await fetch(caminhoArquivo);
-                if (!resposta.ok) {
-                    alert("Erro: O arquivo modelo não foi encontrado. Verifique se os nomes estão exatos.");
-                    return;
-                }
+                if (!resposta.ok) { alert("Erro: O arquivo modelo não foi encontrado."); return; }
 
                 const conteudo = await resposta.arrayBuffer();
                 const zip = new PizZip(conteudo);
-                const documento = new window.docxtemplater(zip, {
-                    paragraphLoop: true,
-                    linebreaks: true,
-                    delimiters: { start: '{', end: '}' } 
-                });
+                const documento = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: '{', end: '}' } });
 
                 const valCliente = document.getElementById('cliente').value.toUpperCase();
                 const valCidade = document.getElementById('cidade').value;
@@ -219,51 +214,62 @@
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
                 
-                // Pegamos a data do calendário e traduzimos com nossa nova função
-                const dataSelecionada = document.getElementById('dataEscolhida').value;
+                // Define qual calendário usar dependendo da tela visível
+                let dataSelecionada = "";
+                if (caminhoArquivo === "Recibo.docx") {
+                    dataSelecionada = document.getElementById('dataEscolhidaRecibo').value;
+                } else {
+                    dataSelecionada = document.getElementById('dataEscolhida').value;
+                }
                 const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
 
-                let pacoteQtd = "";
-                let pacoteQtdExtenso = "";
-                let pacoteValor = "";
-                let pacoteValorExtenso = "";
+                let pacoteQtd = ""; let pacoteQtdExtenso = "";
+                let pacoteValor = ""; let pacoteValorExtenso = "";
+                let pacoteValorTotal = ""; let pacoteValorTotalExtenso = "";
 
                 const escolhaPacote = document.getElementById("pacoteCartoes").value;
                 
+                // A MÁGICA DOS TOTAIS
                 if (escolhaPacote === "500") {
-                    pacoteQtd = "500"; pacoteQtdExtenso = "Quinhentos";
-                    pacoteValor = "17,00"; pacoteValorExtenso = "Dezessete Reais";
+                    pacoteQtd = "500"; pacoteQtdExtenso = "quinhentos";
+                    pacoteValor = "17,00"; pacoteValorExtenso = "dezessete reais";
+                    pacoteValorTotal = "8.500,00"; pacoteValorTotalExtenso = "oito mil e quinhentos reais";
                 } else if (escolhaPacote === "1000") {
-                    pacoteQtd = "1.000"; pacoteQtdExtenso = "Mil";
-                    pacoteValor = "13,00"; pacoteValorExtenso = "Treze Reais";
+                    pacoteQtd = "1.000"; pacoteQtdExtenso = "mil";
+                    pacoteValor = "13,00"; pacoteValorExtenso = "treze reais";
+                    pacoteValorTotal = "13.000,00"; pacoteValorTotalExtenso = "treze mil reais";
                 } else if (escolhaPacote === "2000") {
-                    pacoteQtd = "2.000"; pacoteQtdExtenso = "Dois Mil";
-                    pacoteValor = "11,00"; pacoteValorExtenso = "Onze Reais";
+                    pacoteQtd = "2.000"; pacoteQtdExtenso = "dois mil";
+                    pacoteValor = "11,00"; pacoteValorExtenso = "onze reais";
+                    pacoteValorTotal = "22.000,00"; pacoteValorTotalExtenso = "vinte e dois mil reais";
                 } else if (escolhaPacote === "personalizado") {
                     pacoteQtd = document.getElementById('qtdCartoes').value;
                     pacoteQtdExtenso = document.getElementById('qtdExtenso').value;
                     pacoteValor = document.getElementById('valorCartao').value;
                     pacoteValorExtenso = document.getElementById('valorExtenso').value;
+                    pacoteValorTotal = document.getElementById('valorTotal').value;
+                    pacoteValorTotalExtenso = document.getElementById('valorTotalExtenso').value;
                 }
 
                 documento.render({
+                    // Etiquetas que o Contrato usa
                     cliente: valCliente,
                     cidade: valCidade,
                     UF: valUF,
                     CEP: valCEP,
                     CNPJ: valCNPJ,
-                    data: valDataExtenso, // A data lindamente formatada indo para o Word!
+                    data: valDataExtenso, 
                     qtd_cartoes: pacoteQtd,
                     qtd_extenso: pacoteQtdExtenso,
                     valor_cartao: pacoteValor,
-                    valor_extenso: pacoteValorExtenso
+                    valor_extenso: pacoteValorExtenso,
+                    
+                    // Novas etiquetas exclusivas que o Recibo vai usar!
+                    valor_total: pacoteValorTotal,
+                    valor_total_extenso: pacoteValorTotalExtenso
                 });
 
-                const arquivoGerado = documento.getZip().generate({
-                    type: "blob",
-                    mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                });
-
+                const arquivoGerado = documento.getZip().generate({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
                 saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
 
             } catch (erro) {
