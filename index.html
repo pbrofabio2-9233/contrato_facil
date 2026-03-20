@@ -28,8 +28,8 @@
         
         <label>1. Selecione o Modelo do Documento:</label>
         <select id="modeloContrato">
-            <option value="contratos/Contrato_ceocard.docx">Contrato CEOCARD</option>
-            <option value="contratos/Recibo.docx">Recibo</option>
+            <option value="Contrato_ceocard.docx">Contrato CEOCARD</option>
+            <option value="Recibo.docx">Recibo</option>
         </select>
 
         <label>Nome do Cliente (Contratante):</label>
@@ -89,18 +89,18 @@
         }
 
         async function gerarDocumento() {
-            // Pega o caminho do arquivo selecionado (ex: "contratos/Recibo.docx")
+            // Pega o nome do arquivo selecionado direto da raiz (ex: "Recibo.docx")
             const caminhoArquivo = document.getElementById('modeloContrato').value;
             
-            // Pega o nome do documento selecionado para dar nome ao arquivo salvo (ex: "Recibo")
+            // Pega o texto visível no menu para usar no nome do arquivo final (ex: "Recibo")
             const nomeSelecionadoMenu = document.getElementById('modeloContrato').options[document.getElementById('modeloContrato').selectedIndex].text;
 
             try {
-                // O app busca o arquivo usando o caminho
+                // O app busca o arquivo no mesmo local onde está o index.html
                 const resposta = await fetch(caminhoArquivo);
 
                 if (!resposta.ok) {
-                    alert("Erro: O arquivo modelo não foi encontrado na pasta 'contratos'. Verifique se os nomes estão exatos.");
+                    alert("Erro: O arquivo modelo não foi encontrado. Verifique se os nomes estão exatos (ex: Contrato_ceocard.docx).");
                     return;
                 }
 
@@ -136,8 +136,7 @@
                     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 });
 
-                // Salva o arquivo com o tipo de documento + nome do cliente
-                // Exemplo: "Recibo_JOAO DA SILVA.docx"
+                // Salva o arquivo final
                 saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
 
             } catch (erro) {
