@@ -13,11 +13,13 @@
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
         .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #e65c00; }
+        h3 { color: #2c3e50; font-size: 16px; margin-top: 20px; border-bottom: 2px solid #e65c00; padding-bottom: 5px; }
         label { font-weight: bold; display: block; margin-top: 15px; font-size: 14px; }
         input[type="text"], select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: white; }
         .maiusculo { text-transform: uppercase; }
         .linha-dupla { display: flex; gap: 10px; }
         .linha-dupla div { flex: 1; }
+        .caixa-destaque { background-color: #f9f9f9; padding: 15px; border: 1px dashed #ccc; border-radius: 5px; margin-top: 15px; }
         button { width: 100%; padding: 15px; margin-top: 25px; background-color: #27ae60; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; }
     </style>
 </head>
@@ -26,42 +28,46 @@
     <div class="container">
         <h2>Gerador de Documentos</h2>
         
-        <label>1. Selecione o Modelo do Documento:</label>
+        <label>Selecione o Modelo do Documento:</label>
         <select id="modeloContrato">
             <option value="Contrato_ceocard.docx">Contrato CEOCARD</option>
             <option value="Recibo.docx">Recibo</option>
         </select>
 
+        <h3>Dados do Cliente</h3>
         <label>Nome do Cliente (Contratante):</label>
         <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA">
 
         <div class="linha-dupla">
-            <div>
-                <label>Cidade:</label>
-                <input type="text" id="cidade" placeholder="Ex: Ananindeua">
-            </div>
-            <div>
-                <label>UF:</label>
-                <input type="text" id="uf" class="maiusculo" placeholder="Ex: PA" maxlength="2">
-            </div>
+            <div><label>Cidade:</label><input type="text" id="cidade" placeholder="Ex: Ananindeua"></div>
+            <div><label>UF:</label><input type="text" id="uf" class="maiusculo" placeholder="Ex: PA" maxlength="2"></div>
         </div>
 
         <div class="linha-dupla">
-            <div>
-                <label>CEP:</label>
-                <input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)">
-            </div>
-            <div>
-                <label>CPF / CNPJ:</label>
-                <input type="text" id="cnpj" placeholder="000.000.000-00" maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
-            </div>
+            <div><label>CEP:</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)"></div>
+            <div><label>CPF / CNPJ:</label><input type="text" id="cnpj" placeholder="000.000.000-00" maxlength="18" oninput="aplicarMascaraCpfCnpj(this)"></div>
         </div>
 
-        <label>Termos de Compra (se houver):</label>
-        <input type="text" id="termosCompra" placeholder="Ex: Pagamento em 3x">
+        <h3>Configuração dos Cartões</h3>
+        <label>Escolha o Pacote:</label>
+        <select id="pacoteCartoes" onchange="atualizarValoresCartao()">
+            <option value="">Selecione...</option>
+            <option value="500">500 unidades - R$ 17,00</option>
+            <option value="1000">1.000 unidades - R$ 13,00</option>
+            <option value="2000">2.000 unidades - R$ 11,00</option>
+            <option value="personalizado">Personalizado (Digitar Manualmente)</option>
+        </select>
 
-        <label>Data por Extenso (se houver):</label>
-        <input type="text" id="dataExtenso" placeholder="Ex: 20 de março de 2026">
+        <div class="caixa-destaque">
+            <div class="linha-dupla">
+                <div><label>Qtd (Número):</label><input type="text" id="qtdCartoes" placeholder="Ex: 500"></div>
+                <div><label>Qtd (Extenso):</label><input type="text" id="qtdExtenso" placeholder="Ex: Quinhentos"></div>
+            </div>
+            <div class="linha-dupla">
+                <div><label>Valor Unitário (R$):</label><input type="text" id="valorCartao" placeholder="Ex: 17,00"></div>
+                <div><label>Valor (Extenso):</label><input type="text" id="valorExtenso" placeholder="Ex: Dezessete Reais"></div>
+            </div>
+        </div>
 
         <button onclick="gerarDocumento()">Gerar Documento Preenchido</button>
     </div>
@@ -88,24 +94,52 @@
             campo.value = valor; 
         }
 
-        async function gerarDocumento() {
-            // Pega o nome do arquivo selecionado direto da raiz (ex: "Recibo.docx")
-            const caminhoArquivo = document.getElementById('modeloContrato').value;
+        // --- NOVA FUNÇÃO: Atualiza os campos de acordo com o pacote escolhido ---
+        function atualizarValoresCartao() {
+            const escolha = document.getElementById("pacoteCartoes").value;
             
-            // Pega o texto visível no menu para usar no nome do arquivo final (ex: "Recibo")
+            // Referenciando os campos que serão preenchidos
+            const campoQtd = document.getElementById("qtdCartoes");
+            const campoQtdExt = document.getElementById("qtdExtenso");
+            const campoValor = document.getElementById("valorCartao");
+            const campoValorExt = document.getElementById("valorExtenso");
+
+            if (escolha === "500") {
+                campoQtd.value = "500";
+                campoQtdExt.value = "Quinhentos";
+                campoValor.value = "17,00";
+                campoValorExt.value = "Dezessete Reais";
+            } else if (escolha === "1000") {
+                campoQtd.value = "1.000";
+                campoQtdExt.value = "Mil";
+                campoValor.value = "13,00";
+                campoValorExt.value = "Treze Reais";
+            } else if (escolha === "2000") {
+                campoQtd.value = "2.000";
+                campoQtdExt.value = "Dois Mil";
+                campoValor.value = "11,00";
+                campoValorExt.value = "Onze Reais";
+            } else {
+                // Se for Personalizado ou "Selecione", limpa os campos para o usuário digitar
+                campoQtd.value = "";
+                campoQtdExt.value = "";
+                campoValor.value = "";
+                campoValorExt.value = "";
+            }
+        }
+
+        async function gerarDocumento() {
+            const caminhoArquivo = document.getElementById('modeloContrato').value;
             const nomeSelecionadoMenu = document.getElementById('modeloContrato').options[document.getElementById('modeloContrato').selectedIndex].text;
 
             try {
-                // O app busca o arquivo no mesmo local onde está o index.html
                 const resposta = await fetch(caminhoArquivo);
-
                 if (!resposta.ok) {
-                    alert("Erro: O arquivo modelo não foi encontrado. Verifique se os nomes estão exatos (ex: Contrato_ceocard.docx).");
+                    alert("Erro: O arquivo modelo não foi encontrado. Verifique se os nomes estão exatos.");
                     return;
                 }
 
                 const conteudo = await resposta.arrayBuffer();
-
                 const zip = new PizZip(conteudo);
                 const documento = new window.docxtemplater(zip, {
                     paragraphLoop: true,
@@ -113,22 +147,32 @@
                     delimiters: { start: '{', end: '}' } 
                 });
 
+                // Coletando TODOS os dados (Antigos e Novos)
                 const valCliente = document.getElementById('cliente').value.toUpperCase();
                 const valCidade = document.getElementById('cidade').value;
                 const valUF = document.getElementById('uf').value.toUpperCase();
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
-                const valTermos = document.getElementById('termosCompra').value;
-                const valData = document.getElementById('dataExtenso').value;
+                
+                // Dados dos cartões
+                const valQtdCartoes = document.getElementById('qtdCartoes').value;
+                const valQtdExtenso = document.getElementById('qtdExtenso').value;
+                const valValorCartao = document.getElementById('valorCartao').value;
+                const valValorExtenso = document.getElementById('valorExtenso').value;
 
+                // Passando os dados para o Word substituir
                 documento.render({
                     cliente: valCliente,
                     cidade: valCidade,
                     UF: valUF,
                     CEP: valCEP,
                     CNPJ: valCNPJ,
-                    termos: valTermos,
-                    data: valData
+                    
+                    // Novas etiquetas que você criará no Word
+                    qtd_cartoes: valQtdCartoes,
+                    qtd_extenso: valQtdExtenso,
+                    valor_cartao: valValorCartao,
+                    valor_extenso: valValorExtenso
                 });
 
                 const arquivoGerado = documento.getZip().generate({
@@ -136,7 +180,6 @@
                     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 });
 
-                // Salva o arquivo final
                 saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
 
             } catch (erro) {
