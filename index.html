@@ -119,6 +119,11 @@
             <label>Nome do Cliente (Contratante):</label>
             <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA">
 
+            <div id="campoFantasia">
+                <label>Nome Fantasia (Opcional):</label>
+                <input type="text" id="fantasia" class="maiusculo" placeholder="Ex: NOME POPULAR DA EMPRESA">
+            </div>
+
             <div id="dadosEndereco">
                 <div class="linha-dupla">
                     <div><label>Cidade:</label><input type="text" id="cidade" placeholder="Ex: Ananindeua"></div>
@@ -179,16 +184,70 @@
             document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
 
+        // --- NOME DAS LOGOS FIXADO AQUI ---
         function alternarTema() {
             const corpoPagina = document.body;
             const logo = document.getElementById("logoApp");
             corpoPagina.classList.toggle("dark-mode");
 
             if (corpoPagina.classList.contains("dark-mode")) {
-                logo.src = "Ativo_10Logo_Ceocard.png"; 
+                logo.src = "Ativo_10Logo_Ceocard.png"; // Logo do Tema Escuro
             } else {
-                logo.src = "Ativo_12Logo_Ceocard.png";
+                logo.src = "Ativo_12Logo_Ceocard.png"; // Logo do Tema Claro
             }
+        }
+
+        // --- SISTEMA BLINDADO DE BUSCA DE CNPJ COM PLANO B ---
+        async function buscarDadosCNPJ() {
+            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
+            if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
+            
+            document.getElementById('cliente').value = "Buscando dados...";
+            
+            try {
+                // PLANO A: Tentar na BrasilAPI
+                let resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
+                
+                if (resposta.ok) {
+                    const dados = await resposta.json();
+                    preencherInputsBusca(dados.razao_social, dados.nome_fantasia, dados.municipio, dados.uf, dados.cep);
+                    return; // Sucesso! Sai da função.
+                }
+
+                // PLANO B: Se a BrasilAPI recusar, tentar na CNPJ.ws automaticamente
+                let respostaB = await fetch(`https://publica.cnpj.ws/cnpj/${cnpjDigitado}`);
+                
+                if (respostaB.ok) {
+                    const dadosB = await respostaB.json();
+                    preencherInputsBusca(
+                        dadosB.razao_social, 
+                        dadosB.estabelecimento.nome_fantasia, 
+                        dadosB.estabelecimento.cidade.nome, 
+                        dadosB.estabelecimento.estado.sigla, 
+                        dadosB.estabelecimento.cep
+                    );
+                    return; // Sucesso! Sai da função.
+                }
+
+                // Se ambos falharem
+                throw new Error("CNPJ não encontrado em nenhuma base.");
+
+            } catch (erro) {
+                alert("O servidor da Receita Federal está instável no momento. Por favor, aguarde alguns segundos e clique em Buscar novamente.");
+                document.getElementById('cliente').value = "";
+            }
+        }
+
+        // Função auxiliar para preencher os campos rapidamente
+        function preencherInputsBusca(razao, fantasia, cidade, uf, cepBruto) {
+            document.getElementById('cliente').value = razao || "";
+            document.getElementById('fantasia').value = fantasia || "";
+            document.getElementById('cidade').value = cidade || "";
+            document.getElementById('uf').value = uf || "";
+            
+            let cep = cepBruto ? cepBruto.toString().replace(/\D/g, "") : "";
+            if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
+            document.getElementById('cep').value = cep;
         }
 
         function validarCampos() {
@@ -221,31 +280,16 @@
             const documentoEscolhido = document.getElementById("modeloContrato").value;
             const divEndereco = document.getElementById("dadosEndereco");
             const divDataRecibo = document.getElementById("dataRecibo");
+            const divFantasia = document.getElementById("campoFantasia");
 
             if (documentoEscolhido === "Recibo.docx") {
-                divEndereco.classList.add("escondido"); divDataRecibo.classList.remove("escondido");
+                divEndereco.classList.add("escondido"); 
+                divFantasia.classList.add("escondido");
+                divDataRecibo.classList.remove("escondido");
             } else {
-                divEndereco.classList.remove("escondido"); divDataRecibo.classList.add("escondido");
-            }
-        }
-
-        async function buscarDadosCNPJ() {
-            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
-            if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
-            document.getElementById('cliente').value = "Buscando...";
-            try {
-                const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
-                if (!resposta.ok) throw new Error("CNPJ não encontrado");
-                const dados = await resposta.json();
-                
-                document.getElementById('cliente').value = dados.razao_social;
-                document.getElementById('cidade').value = dados.municipio;
-                document.getElementById('uf').value = dados.uf;
-                let cep = dados.cep ? dados.cep.toString() : "";
-                if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
-                document.getElementById('cep').value = cep;
-            } catch (erro) {
-                alert("Não foi possível encontrar esse CNPJ."); document.getElementById('cliente').value = "";
+                divEndereco.classList.remove("escondido"); 
+                divFantasia.classList.remove("escondido");
+                divDataRecibo.classList.add("escondido");
             }
         }
 
@@ -257,7 +301,6 @@
             campo.value = valor; 
         }
 
-        // --- NOVA FUNÇÃO: Máscara de Moeda Real ---
         function aplicarMascaraMoeda(campo) {
             let valor = campo.value.replace(/\D/g, "");
             if (valor === "") { campo.value = ""; return; }
@@ -267,7 +310,6 @@
             campo.value = valor;
         }
 
-        // --- CÁLCULO INTELIGENTE DO PACOTE PERSONALIZADO ---
         function calcularTotalPersonalizado() {
             let qtd = parseInt(document.getElementById('qtdCartoes').value.replace(/\D/g, '')) || 0;
             let unit = parseFloat(document.getElementById('valorUnitario').value.replace(/\./g, '').replace(',', '.')) || 0;
@@ -298,7 +340,6 @@
             return dia + " de " + meses[mesNumero] + " de " + ano;
         }
 
-        // --- O ROBÔ DO EXTENSO (Traduz números para português) ---
         function numeroParaExtenso(numero, isMoeda = false) {
             if (numero === 0) return isMoeda ? "zero reais" : "zero";
             const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
@@ -361,6 +402,7 @@
                 const documento = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: '{', end: '}' } });
 
                 const valCliente = document.getElementById('cliente').value.toUpperCase();
+                const valFantasia = document.getElementById('fantasia').value.toUpperCase();
                 const valCidade = document.getElementById('cidade').value;
                 const valUF = document.getElementById('uf').value.toUpperCase();
                 const valCEP = document.getElementById('cep').value;
@@ -380,7 +422,6 @@
                 } else if (escolhaPacote === "2000") {
                     pacoteQtd = "2.000"; pacoteQtdExtenso = "dois mil"; pacoteValor = "11,00"; pacoteValorExtenso = "onze reais"; pacoteValorTotal = "22.000,00"; pacoteValorTotalExtenso = "vinte e dois mil reais";
                 } else if (escolhaPacote === "personalizado") {
-                    // Pega os valores da tela já formatados e usa o Robô para escrever o extenso
                     pacoteQtd = document.getElementById('qtdCartoes').value;
                     pacoteValor = document.getElementById('valorUnitario').value;
                     pacoteValorTotal = document.getElementById('valorTotal').value;
@@ -395,7 +436,7 @@
                 }
 
                 documento.render({
-                    cliente: valCliente, cidade: valCidade, UF: valUF, CEP: valCEP, CNPJ: valCNPJ, data: valDataExtenso, 
+                    cliente: valCliente, fantasia: valFantasia, cidade: valCidade, UF: valUF, CEP: valCEP, CNPJ: valCNPJ, data: valDataExtenso, 
                     qtd_cartoes: pacoteQtd, qtd_extenso: pacoteQtdExtenso, valor_cartao: pacoteValor, valor_extenso: pacoteValorExtenso, valor_total: pacoteValorTotal, valor_total_extenso: pacoteValorTotalExtenso
                 });
 
