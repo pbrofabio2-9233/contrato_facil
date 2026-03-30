@@ -40,169 +40,45 @@
             --bg-botao-busca-hover: #2d3748;
         }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background-color: var(--bg-pagina); 
-            color: var(--cor-texto); 
-            transition: background-color 0.4s ease; 
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-pagina); color: var(--cor-texto); transition: background-color 0.4s ease; }
         
         .wrapper { max-width: 750px; margin: 0 auto; }
         
-        .container { 
-            background: var(--bg-cartao); 
-            padding: 40px 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            border-top: 5px solid #e65c00;
-            transition: background-color 0.4s ease, box-shadow 0.4s ease;
-        }
+        .container { background: var(--bg-cartao); padding: 40px 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-top: 5px solid #e65c00; transition: background-color 0.4s ease, box-shadow 0.4s ease; }
 
         .logo-app { display: block; margin: 0 auto 30px auto; max-width: 180px; height: auto; transition: opacity 0.3s ease; }
 
-        .cabecalho-titulo {
-            position: relative;
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .cabecalho-titulo { position: relative; text-align: center; margin-bottom: 30px; }
 
-        h2 { 
-            color: var(--cor-titulo); 
-            margin: 0; 
-            font-weight: 800; 
-            transition: color 0.4s; 
-        }
+        h2 { color: var(--cor-titulo); margin: 0; font-weight: 800; transition: color 0.4s; }
 
-        .theme-switch-wrapper {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-        }
-
-        .theme-switch {
-            display: inline-block;
-            width: 54px;
-            height: 28px;
-            position: relative;
-        }
-
-        .theme-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #cbd5e0;
-            transition: .4s;
-            border-radius: 34px; 
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input:checked + .slider {
-            background-color: #e65c00; 
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px); 
-        }
+        .theme-switch-wrapper { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
+        .theme-switch { display: inline-block; width: 54px; height: 28px; position: relative; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: #e65c00; }
+        input:checked + .slider:before { transform: translateX(26px); }
 
         h3 { color: #e65c00; font-size: 16px; margin-top: 35px; border-bottom: 2px solid var(--borda-input); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         
         label { font-weight: 600; display: block; margin-top: 15px; font-size: 13px; color: var(--cor-texto); text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.4s; }
         
-        input[type="text"], input[type="date"], select { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 6px; 
-            border: 1.5px solid var(--borda-input); 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            background-color: var(--bg-input); 
-            font-size: 15px; 
-            color: var(--texto-input);
-            transition: all 0.3s ease; 
-        }
-        
-        input[type="text"]:focus, input[type="date"]:focus, select:focus { 
-            border-color: #e65c00; 
-            background-color: var(--bg-cartao); 
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(230, 92, 0, 0.15);
-        }
-        
+        input[type="text"], input[type="date"], select { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid var(--borda-input); border-radius: 8px; box-sizing: border-box; background-color: var(--bg-input); font-size: 15px; color: var(--texto-input); transition: all 0.3s ease; }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus { border-color: #e65c00; background-color: var(--bg-cartao); outline: none; box-shadow: 0 0 0 3px rgba(230, 92, 0, 0.15); }
         .maiusculo { text-transform: uppercase; }
         
-        .linha-dupla { display: flex; gap: 15px; align-items: flex-end; }
-        .linha-dupla div { flex: 1; }
+        .linha-dupla { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .linha-dupla div { flex: 1; min-width: 140px; }
         
-        .btn-buscar { 
-            background-color: var(--bg-botao-busca); 
-            color: white; 
-            border: none; 
-            padding: 14px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            width: 100%; 
-            margin-top: 5px; 
-            transition: all 0.3s;
-        }
+        .btn-buscar { background-color: var(--bg-botao-busca); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 5px; transition: all 0.3s; }
         .btn-buscar:hover { background-color: var(--bg-botao-busca-hover); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-        #caixaPersonalizada { 
-            display: none; 
-            background-color: var(--bg-caixa-pers); 
-            padding: 25px; 
-            border: 1.5px solid var(--borda-caixa-pers); 
-            border-radius: 10px; 
-            margin-top: 20px; 
-            transition: background-color 0.4s, border-color 0.4s;
-        }
-        
+        #caixaPersonalizada { display: none; background-color: var(--bg-caixa-pers); padding: 25px; border: 1.5px solid var(--borda-caixa-pers); border-radius: 10px; margin-top: 20px; transition: background-color 0.4s, border-color 0.4s; }
         .escondido { display: none; }
 
-        button.btn-principal { 
-            width: 100%; 
-            padding: 18px; 
-            margin-top: 40px; 
-            background: linear-gradient(135deg, #ff7e14, #e65c00); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            font-weight: 700; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer; 
-            transition: all 0.3s; 
-            box-shadow: 0 4px 15px rgba(230, 92, 0, 0.3);
-        }
-        button.btn-principal:hover { 
-            background: linear-gradient(135deg, #e65c00, #cc5200); 
-            transform: translateY(-3px); 
-            box-shadow: 0 6px 20px rgba(230, 92, 0, 0.4);
-        }
+        button.btn-principal { width: 100%; padding: 18px; margin-top: 40px; background: linear-gradient(135deg, #ff7e14, #e65c00); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(230, 92, 0, 0.3); }
+        button.btn-principal:hover { background: linear-gradient(135deg, #e65c00, #cc5200); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(230, 92, 0, 0.4); }
     </style>
 </head>
 <body>
@@ -214,7 +90,6 @@
 
             <div class="cabecalho-titulo">
                 <h2>Sistema de Emissão</h2>
-                
                 <div class="theme-switch-wrapper" title="Alternar Modo Escuro">
                     <label class="theme-switch" for="checkboxTema">
                         <input type="checkbox" id="checkboxTema" onchange="alternarTema()">
@@ -275,12 +150,16 @@
                 <label style="color: #e65c00; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 15px;">PACOTE PERSONALIZADO</label>
                 <div class="linha-dupla">
                     <div>
-                        <label>Quantidade de Cartões:</label>
-                        <input type="text" id="qtdCartoes" placeholder="Ex: 350">
+                        <label>Qtd de Cartões:</label>
+                        <input type="text" id="qtdCartoes" placeholder="Ex: 350" oninput="this.value=this.value.replace(/\D/g,''); calcularTotalPersonalizado();">
+                    </div>
+                    <div>
+                        <label>V. Unitário (R$):</label>
+                        <input type="text" id="valorUnitario" placeholder="Ex: 11,00" oninput="aplicarMascaraMoeda(this); calcularTotalPersonalizado();">
                     </div>
                     <div>
                         <label>Valor Total (R$):</label>
-                        <input type="text" id="valorTotal" placeholder="Ex: 5.500,00">
+                        <input type="text" id="valorTotal" placeholder="Ex: 3.850,00" oninput="aplicarMascaraMoeda(this); calcularUnitarioPersonalizado();">
                     </div>
                 </div>
             </div>
@@ -296,27 +175,18 @@
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const dia = String(hoje.getDate()).padStart(2, '0');
             const dataPadrao = `${ano}-${mes}-${dia}`;
-            
             document.getElementById('dataEscolhida').value = dataPadrao;
             document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
 
-        // --- FUNÇÃO ATUALIZADA: Agora ela troca a logo também! ---
         function alternarTema() {
             const corpoPagina = document.body;
             const logo = document.getElementById("logoApp");
-            
             corpoPagina.classList.toggle("dark-mode");
 
-            // Se o modo noturno ativou, troca para a logo branca
             if (corpoPagina.classList.contains("dark-mode")) {
-                
-                // ======== ATENÇÃO AQUI ========
-                // Substitua "Logo_Branca_Ceocard.png" pelo nome exato do arquivo da sua logo escura no GitHub
                 logo.src = "Ativo_10Logo_Ceocard.png"; 
-                
             } else {
-                // Se voltou para o modo claro, volta a logo original
                 logo.src = "Ativo_12Logo_Ceocard.png";
             }
         }
@@ -333,7 +203,6 @@
                 const cnpj = document.getElementById("cnpj").value.trim();
                 const cidade = document.getElementById("cidade").value.trim();
                 const uf = document.getElementById("uf").value.trim();
-                
                 if (cnpj === "") return "Para gerar um contrato, o CPF/CNPJ é obrigatório.";
                 if (cidade === "") return "Para gerar um contrato, preencha a Cidade.";
                 if (uf === "") return "Para gerar um contrato, preencha a UF.";
@@ -342,8 +211,8 @@
             if (pacote === "personalizado") {
                 const qtd = document.getElementById("qtdCartoes").value.trim();
                 const valor = document.getElementById("valorTotal").value.trim();
-                if (qtd === "") return "Você escolheu o pacote Personalizado. Por favor, preencha a Quantidade de Cartões.";
-                if (valor === "") return "Você escolheu o pacote Personalizado. Por favor, preencha o Valor Total.";
+                if (qtd === "") return "Preencha a Quantidade de Cartões.";
+                if (valor === "") return "Preencha os Valores.";
             }
             return null; 
         }
@@ -354,18 +223,16 @@
             const divDataRecibo = document.getElementById("dataRecibo");
 
             if (documentoEscolhido === "Recibo.docx") {
-                divEndereco.classList.add("escondido");
-                divDataRecibo.classList.remove("escondido");
+                divEndereco.classList.add("escondido"); divDataRecibo.classList.remove("escondido");
             } else {
-                divEndereco.classList.remove("escondido");
-                divDataRecibo.classList.add("escondido");
+                divEndereco.classList.remove("escondido"); divDataRecibo.classList.add("escondido");
             }
         }
 
         async function buscarDadosCNPJ() {
             let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
             if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
-            document.getElementById('cliente').value = "Buscando dados na Receita...";
+            document.getElementById('cliente').value = "Buscando...";
             try {
                 const resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
                 if (!resposta.ok) throw new Error("CNPJ não encontrado");
@@ -377,10 +244,8 @@
                 let cep = dados.cep ? dados.cep.toString() : "";
                 if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
                 document.getElementById('cep').value = cep;
-                
             } catch (erro) {
-                alert("Não foi possível encontrar esse CNPJ.");
-                document.getElementById('cliente').value = "";
+                alert("Não foi possível encontrar esse CNPJ."); document.getElementById('cliente').value = "";
             }
         }
 
@@ -390,6 +255,33 @@
             if (valor.length <= 11) { valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2"); } 
             else { valor = valor.replace(/^(\d{2})(\d)/, "$1.$2"); valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3"); valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2"); valor = valor.replace(/(\d{4})(\d)/, "$1-$2"); }
             campo.value = valor; 
+        }
+
+        // --- NOVA FUNÇÃO: Máscara de Moeda Real ---
+        function aplicarMascaraMoeda(campo) {
+            let valor = campo.value.replace(/\D/g, "");
+            if (valor === "") { campo.value = ""; return; }
+            valor = (parseInt(valor) / 100).toFixed(2) + "";
+            valor = valor.replace(".", ",");
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+            campo.value = valor;
+        }
+
+        // --- CÁLCULO INTELIGENTE DO PACOTE PERSONALIZADO ---
+        function calcularTotalPersonalizado() {
+            let qtd = parseInt(document.getElementById('qtdCartoes').value.replace(/\D/g, '')) || 0;
+            let unit = parseFloat(document.getElementById('valorUnitario').value.replace(/\./g, '').replace(',', '.')) || 0;
+            if (qtd > 0 && unit > 0) {
+                document.getElementById('valorTotal').value = (qtd * unit).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+        }
+
+        function calcularUnitarioPersonalizado() {
+            let qtd = parseInt(document.getElementById('qtdCartoes').value.replace(/\D/g, '')) || 0;
+            let total = parseFloat(document.getElementById('valorTotal').value.replace(/\./g, '').replace(',', '.')) || 0;
+            if (qtd > 0 && total > 0) {
+                document.getElementById('valorUnitario').value = (total / qtd).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
         }
 
         function verificarPacote() {
@@ -406,12 +298,56 @@
             return dia + " de " + meses[mesNumero] + " de " + ano;
         }
 
+        // --- O ROBÔ DO EXTENSO (Traduz números para português) ---
+        function numeroParaExtenso(numero, isMoeda = false) {
+            if (numero === 0) return isMoeda ? "zero reais" : "zero";
+            const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+            const especiais = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+            const dezenas = ["", "dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+            const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+            function obterGrupo(n) {
+                if (n === 100) return "cem";
+                let c = Math.floor(n / 100); let d = Math.floor((n % 100) / 10); let u = n % 10;
+                let palavras = [];
+                if (c > 0) palavras.push(centenas[c]);
+                if (d === 1) { palavras.push(especiais[u]); } else {
+                    if (d > 1) palavras.push(dezenas[d]);
+                    if (u > 0) palavras.push(unidades[u]);
+                }
+                return palavras.join(" e ");
+            }
+
+            let numStr = numero.toFixed(2);
+            let [inteiro, decimal] = numStr.split('.');
+            let intNum = parseInt(inteiro, 10); let decNum = parseInt(decimal, 10);
+            let partes = [];
+
+            if (intNum > 0) {
+                let milhoes = Math.floor(intNum / 1000000); let milhares = Math.floor((intNum % 1000000) / 1000); let centavosInt = intNum % 1000;
+                if (milhoes > 0) partes.push(obterGrupo(milhoes) + (milhoes === 1 ? " milhão" : " milhões"));
+                if (milhares > 0) partes.push((milhares === 1 ? "um mil" : obterGrupo(milhares)) + " mil");
+                if (centavosInt > 0) {
+                    let txt = obterGrupo(centavosInt);
+                    if (partes.length > 0 && (centavosInt <= 100 || centavosInt % 100 === 0)) partes.push("e " + txt); else partes.push(txt);
+                }
+            }
+
+            let resultado = partes.join(", ").replace(/, e /g, " e ");
+            
+            if (isMoeda) {
+                if (intNum === 1) resultado += " real"; else if (intNum > 1) resultado += " reais";
+                if (decNum > 0) {
+                    let txtDec = obterGrupo(decNum);
+                    if (intNum > 0) resultado += " e " + txtDec + (decNum === 1 ? " centavo" : " centavos"); else resultado = txtDec + (decNum === 1 ? " centavo" : " centavos");
+                }
+            }
+            return resultado.trim();
+        }
+
         async function gerarDocumento() {
             const erroValidacao = validarCampos();
-            if (erroValidacao !== null) {
-                alert("Atenção: " + erroValidacao); 
-                return; 
-            }
+            if (erroValidacao !== null) { alert("Atenção: " + erroValidacao); return; }
 
             const caminhoArquivo = document.getElementById('modeloContrato').value;
             const nomeSelecionadoMenu = document.getElementById('modeloContrato').options[document.getElementById('modeloContrato').selectedIndex].text;
@@ -430,12 +366,7 @@
                 const valCEP = document.getElementById('cep').value;
                 const valCNPJ = document.getElementById('cnpj').value;
                 
-                let dataSelecionada = "";
-                if (caminhoArquivo === "Recibo.docx") {
-                    dataSelecionada = document.getElementById('dataEscolhidaRecibo').value;
-                } else {
-                    dataSelecionada = document.getElementById('dataEscolhida').value;
-                }
+                let dataSelecionada = (caminhoArquivo === "Recibo.docx") ? document.getElementById('dataEscolhidaRecibo').value : document.getElementById('dataEscolhida').value;
                 const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
 
                 let pacoteQtd = ""; let pacoteValor = ""; let pacoteValorTotal = ""; 
@@ -449,13 +380,18 @@
                 } else if (escolhaPacote === "2000") {
                     pacoteQtd = "2.000"; pacoteQtdExtenso = "dois mil"; pacoteValor = "11,00"; pacoteValorExtenso = "onze reais"; pacoteValorTotal = "22.000,00"; pacoteValorTotalExtenso = "vinte e dois mil reais";
                 } else if (escolhaPacote === "personalizado") {
+                    // Pega os valores da tela já formatados e usa o Robô para escrever o extenso
                     pacoteQtd = document.getElementById('qtdCartoes').value;
+                    pacoteValor = document.getElementById('valorUnitario').value;
                     pacoteValorTotal = document.getElementById('valorTotal').value;
-                    pacoteQtdExtenso = ""; pacoteValorExtenso = ""; pacoteValorTotalExtenso = "";
-                    try {
-                        let qtdLimpa = parseInt(pacoteQtd.replace(/\D/g, '')); let totalLimpo = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.'));
-                        if (qtdLimpa > 0 && !isNaN(totalLimpo)) pacoteValor = (totalLimpo / qtdLimpa).toFixed(2).replace('.', ',');
-                    } catch(e) { pacoteValor = "0,00"; }
+
+                    let qNum = parseInt(pacoteQtd.replace(/\D/g, '')) || 0;
+                    let uNum = parseFloat(pacoteValor.replace(/\./g, '').replace(',', '.')) || 0;
+                    let tNum = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.')) || 0;
+
+                    pacoteQtdExtenso = numeroParaExtenso(qNum, false);
+                    pacoteValorExtenso = numeroParaExtenso(uNum, true);
+                    pacoteValorTotalExtenso = numeroParaExtenso(tNum, true);
                 }
 
                 documento.render({
