@@ -184,20 +184,18 @@
             document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
         };
 
-        // --- NOME DAS LOGOS FIXADO AQUI ---
         function alternarTema() {
             const corpoPagina = document.body;
             const logo = document.getElementById("logoApp");
             corpoPagina.classList.toggle("dark-mode");
 
             if (corpoPagina.classList.contains("dark-mode")) {
-                logo.src = "Ativo_10Logo_Ceocard.png"; // Logo do Tema Escuro
+                logo.src = "Ativo_10Logo_Ceocard.png"; 
             } else {
-                logo.src = "Ativo_12Logo_Ceocard.png"; // Logo do Tema Claro
+                logo.src = "Ativo_12Logo_Ceocard.png"; 
             }
         }
 
-        // --- SISTEMA BLINDADO DE BUSCA DE CNPJ COM PLANO B ---
         async function buscarDadosCNPJ() {
             let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
             if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
@@ -205,16 +203,14 @@
             document.getElementById('cliente').value = "Buscando dados...";
             
             try {
-                // PLANO A: Tentar na BrasilAPI
                 let resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
                 
                 if (resposta.ok) {
                     const dados = await resposta.json();
                     preencherInputsBusca(dados.razao_social, dados.nome_fantasia, dados.municipio, dados.uf, dados.cep);
-                    return; // Sucesso! Sai da função.
+                    return; 
                 }
 
-                // PLANO B: Se a BrasilAPI recusar, tentar na CNPJ.ws automaticamente
                 let respostaB = await fetch(`https://publica.cnpj.ws/cnpj/${cnpjDigitado}`);
                 
                 if (respostaB.ok) {
@@ -226,10 +222,9 @@
                         dadosB.estabelecimento.estado.sigla, 
                         dadosB.estabelecimento.cep
                     );
-                    return; // Sucesso! Sai da função.
+                    return; 
                 }
 
-                // Se ambos falharem
                 throw new Error("CNPJ não encontrado em nenhuma base.");
 
             } catch (erro) {
@@ -238,7 +233,6 @@
             }
         }
 
-        // Função auxiliar para preencher os campos rapidamente
         function preencherInputsBusca(razao, fantasia, cidade, uf, cepBruto) {
             document.getElementById('cliente').value = razao || "";
             document.getElementById('fantasia').value = fantasia || "";
@@ -391,7 +385,6 @@
             if (erroValidacao !== null) { alert("Atenção: " + erroValidacao); return; }
 
             const caminhoArquivo = document.getElementById('modeloContrato').value;
-            const nomeSelecionadoMenu = document.getElementById('modeloContrato').options[document.getElementById('modeloContrato').selectedIndex].text;
 
             try {
                 const resposta = await fetch(caminhoArquivo);
@@ -440,8 +433,14 @@
                     qtd_cartoes: pacoteQtd, qtd_extenso: pacoteQtdExtenso, valor_cartao: pacoteValor, valor_extenso: pacoteValorExtenso, valor_total: pacoteValorTotal, valor_total_extenso: pacoteValorTotalExtenso
                 });
 
+                // === A MÁGICA DA NOMEAÇÃO DO ARQUIVO ===
+                // Se a empresa tiver um Nome Fantasia preenchido, ele usa. Se não tiver, usa a Razão Social (valCliente) para não ficar vazio.
+                const nomeParaArquivo = valFantasia !== "" ? valFantasia : valCliente;
+                const prefixoArquivo = (caminhoArquivo === "Recibo.docx") ? "RECIBO" : "CONTRATO";
+                const nomeFinal = `${prefixoArquivo} - ${nomeParaArquivo}.docx`;
+
                 const arquivoGerado = documento.getZip().generate({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-                saveAs(arquivoGerado, nomeSelecionadoMenu + "_" + valCliente + ".docx");
+                saveAs(arquivoGerado, nomeFinal);
 
             } catch (erro) {
                 console.error("Erro completo:", erro);
