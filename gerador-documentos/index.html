@@ -10,6 +10,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
     <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
         :root {
@@ -450,6 +453,26 @@
                 alert("Erro ao processar o ficheiro Word! Motivo: " + (erro.message || "Verifique se todas as chaves {} estão fechadas corretamente no documento original."));
             }
         }
+        // ==========================================
+        // SEGURANÇA DO FIREBASE (Trancando a Janela)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZdBXKCfp3JboXC95Hbt7H-Tp7ezXOTUE",
+            authDomain: "projeto-ceocard.firebaseapp.com",
+            projectId: "projeto-ceocard",
+            storageBucket: "projeto-ceocard.firebasestorage.app",
+            messagingSenderId: "322820070422",
+            appId: "1:322820070422:web:86c81c58bb930891a86937"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                // Se NÃO estiver logado, expulsa de volta para a tela de Login
+                window.location.href = "../index.html"; 
+            }
+        });
+        // ==========================================
     </script>
 </body>
 </html>
