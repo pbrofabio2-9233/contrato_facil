@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Sistema Ceocard</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; }
+        
+        /* Navbar Superior */
+        .navbar { background-color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom: 3px solid #e65c00; }
+        .navbar img { max-width: 120px; }
+        .btn-sair { background: none; border: 1.5px solid #2c3e50; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; color: #2c3e50; }
+        .btn-sair:hover { background-color: #2c3e50; color: white; }
+
+        /* Grelha de Aplicações */
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 40px; }
+        
+        .grid-apps { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        
+        .card-app { background: white; width: 250px; padding: 30px 20px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-decoration: none; color: #2c3e50; transition: transform 0.3s; cursor: pointer; border: 1px solid #e2e8f0; }
+        .card-app:hover { transform: translateY(-5px); border-color: #e65c00; }
+        
+        .card-app h3 { margin: 15px 0 5px 0; color: #e65c00; }
+        .card-app p { font-size: 13px; color: #718096; margin: 0; }
+        .icone { font-size: 40px; }
+        
+        /* Aplicação Indisponível (Brevemente) */
+        .card-app.desativado { opacity: 0.6; cursor: not-allowed; }
+        .card-app.desativado:hover { transform: none; border-color: #e2e8f0; }
+    </style>
+</head>
+<body style="display: none;" id="corpoPagina"> <div class="navbar">
+        <img src="assets/Ativo_12Logo_Ceocard.png" alt="Logo Ceocard">
+        <button class="btn-sair" onclick="sair()">Terminar Sessão</button>
+    </div>
+
+    <div class="container">
+        <h1>Aplicações Disponíveis</h1>
+        
+        <div class="grid-apps">
+            
+            <a href="gerador-documentos/index.html" class="card-app">
+                <div class="icone">📄</div>
+                <h3>Gerador de Contratos</h3>
+                <p>Emissão de contratos e recibos de pacotes de cartões.</p>
+            </a>
+
+            <div class="card-app desativado">
+                <div class="icone">📊</div>
+                <h3>Relatórios Financeiros</h3>
+                <p>Brevemente disponível.</p>
+            </div>
+
+            <div class="card-app desativado">
+                <div class="icone">👥</div>
+                <h3>Gestão de Clientes</h3>
+                <p>Brevemente disponível.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // COLOQUE AS MESMAS CHAVES DO FIREBASE AQUI!
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "COLOQUE_A_SUA_API_KEY_AQUI",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // SEGURANÇA: Se não estiver logado, atira o utilizador de volta para o Login
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // Deixa a página visível
+                document.getElementById("corpoPagina").style.display = "block";
+            } else {
+                // Expulsa para o index.html
+                window.location.href = "index.html";
+            }
+        });
+
+        function sair() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "index.html";
+            });
+        }
+    </script>
+</body>
+</html>
