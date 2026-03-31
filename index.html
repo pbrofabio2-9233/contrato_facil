@@ -3,450 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Documentos - CEOCARD</title>
+    <title>Login - Sistema Ceocard</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
-    <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
-        :root {
-            --bg-pagina: #e2e8f0; 
-            --bg-cartao: #ffffff;
-            --cor-titulo: #2c3e50;
-            --cor-texto: #4a5568; 
-            --bg-input: #f8fafc;
-            --borda-input: #cbd5e0; 
-            --texto-input: #2d3748;
-            --bg-caixa-pers: #fffaf5;
-            --borda-caixa-pers: #fbd38d;
-            --bg-botao-busca: #2c3e50;
-            --bg-botao-busca-hover: #1a252f;
-        }
-
-        body.dark-mode {
-            --bg-pagina: #121212; 
-            --bg-cartao: #1e1e1e; 
-            --cor-titulo: #ffffff;
-            --cor-texto: #a0aec0;
-            --bg-input: #2d3748;
-            --borda-input: #4a5568;
-            --texto-input: #f7fafc;
-            --bg-caixa-pers: #2d261e;
-            --borda-caixa-pers: #9c4221;
-            --bg-botao-busca: #4a5568;
-            --bg-botao-busca-hover: #2d3748;
-        }
-
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-pagina); color: var(--cor-texto); transition: background-color 0.4s ease; }
-        
-        .wrapper { max-width: 750px; margin: 0 auto; }
-        
-        .container { background: var(--bg-cartao); padding: 40px 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-top: 5px solid #e65c00; transition: background-color 0.4s ease, box-shadow 0.4s ease; }
-
-        .logo-app { display: block; margin: 0 auto 30px auto; max-width: 180px; height: auto; transition: opacity 0.3s ease; }
-
-        .cabecalho-titulo { position: relative; text-align: center; margin-bottom: 30px; }
-
-        h2 { color: var(--cor-titulo); margin: 0; font-weight: 800; transition: color 0.4s; }
-
-        .theme-switch-wrapper { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
-        .theme-switch { display: inline-block; width: 54px; height: 28px; position: relative; }
-        .theme-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #e65c00; }
-        input:checked + .slider:before { transform: translateX(26px); }
-
-        h3 { color: #e65c00; font-size: 16px; margin-top: 35px; border-bottom: 2px solid var(--borda-input); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        label { font-weight: 600; display: block; margin-top: 15px; font-size: 13px; color: var(--cor-texto); text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.4s; }
-        
-        input[type="text"], input[type="date"], select { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid var(--borda-input); border-radius: 8px; box-sizing: border-box; background-color: var(--bg-input); font-size: 15px; color: var(--texto-input); transition: all 0.3s ease; }
-        input[type="text"]:focus, input[type="date"]:focus, select:focus { border-color: #e65c00; background-color: var(--bg-cartao); outline: none; box-shadow: 0 0 0 3px rgba(230, 92, 0, 0.15); }
-        .maiusculo { text-transform: uppercase; }
-        
-        .linha-dupla { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
-        .linha-dupla div { flex: 1; min-width: 140px; }
-        
-        .btn-buscar { background-color: var(--bg-botao-busca); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 5px; transition: all 0.3s; }
-        .btn-buscar:hover { background-color: var(--bg-botao-busca-hover); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-
-        #caixaPersonalizada { display: none; background-color: var(--bg-caixa-pers); padding: 25px; border: 1.5px solid var(--borda-caixa-pers); border-radius: 10px; margin-top: 20px; transition: background-color 0.4s, border-color 0.4s; }
-        .escondido { display: none; }
-
-        button.btn-principal { width: 100%; padding: 18px; margin-top: 40px; background: linear-gradient(135deg, #ff7e14, #e65c00); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(230, 92, 0, 0.3); }
-        button.btn-principal:hover { background: linear-gradient(135deg, #e65c00, #cc5200); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(230, 92, 0, 0.4); }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #e2e8f0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 400px; border-top: 5px solid #e65c00; }
+        .logo { max-width: 150px; margin-bottom: 20px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1.5px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; background-color: #f8fafc; font-size: 15px; outline: none; }
+        input:focus { border-color: #e65c00; }
+        button { width: 100%; padding: 15px; margin-top: 20px; background: linear-gradient(135deg, #ff7e14, #e65c00); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(230, 92, 0, 0.3); }
+        .erro { color: red; margin-top: 10px; font-size: 14px; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div class="container">
-            
-            <img src="Ativo_12Logo_Ceocard.png" alt="Logo CEOCARD" class="logo-app" id="logoApp">
-
-            <div class="cabecalho-titulo">
-                <h2>Sistema de Emissão</h2>
-                <div class="theme-switch-wrapper" title="Alternar Modo Escuro">
-                    <label class="theme-switch" for="checkboxTema">
-                        <input type="checkbox" id="checkboxTema" onchange="alternarTema()">
-                        <div class="slider"></div>
-                    </label>
-                </div>
-            </div>
-            
-            <label>Selecione o Documento:</label>
-            <select id="modeloContrato" onchange="adaptarTela()">
-                <option value="Contrato_ceocard.docx">Contrato de Prestação de Serviços</option>
-                <option value="Recibo.docx">Recibo de Pagamento</option>
-            </select>
-
-            <h3>Dados do Cliente</h3>
-            
-            <div class="linha-dupla">
-                <div style="flex: 2;">
-                    <label>CPF / CNPJ:</label>
-                    <input type="text" id="cnpj" placeholder="Digite para buscar..." maxlength="18" oninput="aplicarMascaraCpfCnpj(this)">
-                </div>
-                <div style="flex: 1;">
-                    <button class="btn-buscar" onclick="buscarDadosCNPJ()">🔍 Buscar</button>
-                </div>
-            </div>
-
-            <label>Nome do Cliente (Contratante):</label>
-            <input type="text" id="cliente" class="maiusculo" placeholder="Ex: EMPRESA FICTÍCIA LTDA">
-
-            <div id="campoFantasia">
-                <label>Nome Fantasia (Opcional):</label>
-                <input type="text" id="fantasia" class="maiusculo" placeholder="Ex: NOME POPULAR DA EMPRESA">
-            </div>
-
-            <div id="dadosEndereco">
-                <div class="linha-dupla">
-                    <div><label>Cidade:</label><input type="text" id="cidade" placeholder="Ex: Ananindeua"></div>
-                    <div><label>UF:</label><input type="text" id="uf" class="maiusculo" placeholder="Ex: PA" maxlength="2"></div>
-                </div>
-
-                <div class="linha-dupla">
-                    <div><label>CEP:</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="aplicarMascaraCEP(this)"></div>
-                    <div><label>Data do Documento:</label><input type="date" id="dataEscolhida"></div>
-                </div>
-            </div>
-            
-            <div id="dataRecibo" class="escondido">
-                <label>Data do Recibo:</label>
-                <input type="date" id="dataEscolhidaRecibo">
-            </div>
-
-            <h3>Configuração dos Cartões</h3>
-            <label>Escolha o Pacote:</label>
-            <select id="pacoteCartoes" onchange="verificarPacote()">
-                <option value="0">Selecione...</option>
-                <option value="500">500 unidades (R$ 17,00/un) - Total: R$ 8.500,00</option>
-                <option value="1000">1.000 unidades (R$ 13,00/un) - Total: R$ 13.000,00</option>
-                <option value="2000">2.000 unidades (R$ 11,00/un) - Total: R$ 22.000,00</option>
-                <option value="personalizado">Personalizado (Digitar Manualmente)</option>
-            </select>
-
-            <div id="caixaPersonalizada">
-                <label style="color: #e65c00; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 15px;">PACOTE PERSONALIZADO</label>
-                <div class="linha-dupla">
-                    <div>
-                        <label>Qtd de Cartões:</label>
-                        <input type="text" id="qtdCartoes" placeholder="Ex: 350" oninput="this.value=this.value.replace(/\D/g,''); calcularTotalPersonalizado();">
-                    </div>
-                    <div>
-                        <label>V. Unitário (R$):</label>
-                        <input type="text" id="valorUnitario" placeholder="Ex: 11,00" oninput="aplicarMascaraMoeda(this); calcularTotalPersonalizado();">
-                    </div>
-                    <div>
-                        <label>Valor Total (R$):</label>
-                        <input type="text" id="valorTotal" placeholder="Ex: 3.850,00" oninput="aplicarMascaraMoeda(this); calcularUnitarioPersonalizado();">
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn-principal" onclick="gerarDocumento()">Gerar Documento</button>
-        </div>
+    <div class="login-box">
+        <img src="assets/Ativo_12Logo_Ceocard.png" alt="Logo Ceocard" class="logo">
+        <h2 style="color: #2c3e50; margin-top: 0;">Portal do Colaborador</h2>
+        
+        <input type="email" id="email" placeholder="Seu E-mail">
+        <input type="password" id="senha" placeholder="Palavra-passe">
+        
+        <p id="msgErro" class="erro">Dados incorretos. Tente novamente.</p>
+        
+        <button onclick="entrar()">Aceder ao Sistema</button>
     </div>
 
     <script>
-        window.onload = function() {
-            const hoje = new Date();
-            const ano = hoje.getFullYear();
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            const dataPadrao = `${ano}-${mes}-${dia}`;
-            document.getElementById('dataEscolhida').value = dataPadrao;
-            document.getElementById('dataEscolhidaRecibo').value = dataPadrao;
+        // ==========================================
+        // COLOQUE AS SUAS CHAVES DO FIREBASE AQUI!
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "COLOQUE_A_SUA_API_KEY_AQUI",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
         };
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
 
-        function alternarTema() {
-            const corpoPagina = document.body;
-            const logo = document.getElementById("logoApp");
-            corpoPagina.classList.toggle("dark-mode");
+        // Função de Login
+        function entrar() {
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            const msgErro = document.getElementById("msgErro");
 
-            if (corpoPagina.classList.contains("dark-mode")) {
-                logo.src = "Ativo_10Logo_Ceocard.png"; 
-            } else {
-                logo.src = "Ativo_12Logo_Ceocard.png"; 
-            }
+            firebase.auth().signInWithEmailAndPassword(email, senha)
+            .then((userCredential) => {
+                // Sucesso! Vai para o Painel de Aplicações
+                window.location.href = "dashboard.html";
+            })
+            .catch((error) => {
+                msgErro.style.display = "block";
+            });
         }
 
-        async function buscarDadosCNPJ() {
-            let cnpjDigitado = document.getElementById('cnpj').value.replace(/\D/g, "");
-            if (cnpjDigitado.length !== 14) { alert("Por favor, digite um CNPJ completo para buscar."); return; }
-            
-            document.getElementById('cliente').value = "Buscando dados...";
-            
-            try {
-                let resposta = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjDigitado}`);
-                
-                if (resposta.ok) {
-                    const dados = await resposta.json();
-                    preencherInputsBusca(dados.razao_social, dados.nome_fantasia, dados.municipio, dados.uf, dados.cep);
-                    return; 
-                }
-
-                let respostaB = await fetch(`https://publica.cnpj.ws/cnpj/${cnpjDigitado}`);
-                
-                if (respostaB.ok) {
-                    const dadosB = await respostaB.json();
-                    preencherInputsBusca(
-                        dadosB.razao_social, 
-                        dadosB.estabelecimento.nome_fantasia, 
-                        dadosB.estabelecimento.cidade.nome, 
-                        dadosB.estabelecimento.estado.sigla, 
-                        dadosB.estabelecimento.cep
-                    );
-                    return; 
-                }
-
-                throw new Error("CNPJ não encontrado em nenhuma base.");
-
-            } catch (erro) {
-                alert("O servidor da Receita Federal está instável no momento. Por favor, aguarde alguns segundos e clique em Buscar novamente.");
-                document.getElementById('cliente').value = "";
-            }
-        }
-
-        function preencherInputsBusca(razao, fantasia, cidade, uf, cepBruto) {
-            document.getElementById('cliente').value = razao || "";
-            document.getElementById('fantasia').value = fantasia || "";
-            document.getElementById('cidade').value = cidade || "";
-            document.getElementById('uf').value = uf || "";
-            
-            let cep = cepBruto ? cepBruto.toString().replace(/\D/g, "") : "";
-            if(cep.length === 8) cep = cep.substring(0,5) + "-" + cep.substring(5);
-            document.getElementById('cep').value = cep;
-        }
-
-        function validarCampos() {
-            const documento = document.getElementById("modeloContrato").value;
-            const cliente = document.getElementById("cliente").value.trim();
-            const pacote = document.getElementById("pacoteCartoes").value;
-            
-            if (cliente === "") return "Por favor, preencha o Nome do Cliente.";
-            if (pacote === "0") return "Por favor, selecione um Pacote de Cartões.";
-            
-            if (documento === "Contrato_ceocard.docx") {
-                const cnpj = document.getElementById("cnpj").value.trim();
-                const cidade = document.getElementById("cidade").value.trim();
-                const uf = document.getElementById("uf").value.trim();
-                if (cnpj === "") return "Para gerar um contrato, o CPF/CNPJ é obrigatório.";
-                if (cidade === "") return "Para gerar um contrato, preencha a Cidade.";
-                if (uf === "") return "Para gerar um contrato, preencha a UF.";
-            }
-            
-            if (pacote === "personalizado") {
-                const qtd = document.getElementById("qtdCartoes").value.trim();
-                const valor = document.getElementById("valorTotal").value.trim();
-                if (qtd === "") return "Preencha a Quantidade de Cartões.";
-                if (valor === "") return "Preencha os Valores.";
-            }
-            return null; 
-        }
-
-        function adaptarTela() {
-            const documentoEscolhido = document.getElementById("modeloContrato").value;
-            const divEndereco = document.getElementById("dadosEndereco");
-            const divDataRecibo = document.getElementById("dataRecibo");
-            const divFantasia = document.getElementById("campoFantasia");
-
-            if (documentoEscolhido === "Recibo.docx") {
-                divEndereco.classList.add("escondido"); 
-                divFantasia.classList.add("escondido");
-                divDataRecibo.classList.remove("escondido");
-            } else {
-                divEndereco.classList.remove("escondido"); 
-                divFantasia.classList.remove("escondido");
-                divDataRecibo.classList.add("escondido");
-            }
-        }
-
-        function aplicarMascaraCEP(campo) { let valor = campo.value.replace(/\D/g, ""); valor = valor.replace(/^(\d{5})(\d)/, "$1-$2"); campo.value = valor; }
-        function aplicarMascaraCpfCnpj(campo) {
-            let valor = campo.value.replace(/\D/g, ""); 
-            if (valor.length <= 11) { valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d)/, "$1.$2"); valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2"); } 
-            else { valor = valor.replace(/^(\d{2})(\d)/, "$1.$2"); valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3"); valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2"); valor = valor.replace(/(\d{4})(\d)/, "$1-$2"); }
-            campo.value = valor; 
-        }
-
-        function aplicarMascaraMoeda(campo) {
-            let valor = campo.value.replace(/\D/g, "");
-            if (valor === "") { campo.value = ""; return; }
-            valor = (parseInt(valor) / 100).toFixed(2) + "";
-            valor = valor.replace(".", ",");
-            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-            campo.value = valor;
-        }
-
-        function calcularTotalPersonalizado() {
-            let qtd = parseInt(document.getElementById('qtdCartoes').value.replace(/\D/g, '')) || 0;
-            let unit = parseFloat(document.getElementById('valorUnitario').value.replace(/\./g, '').replace(',', '.')) || 0;
-            if (qtd > 0 && unit > 0) {
-                document.getElementById('valorTotal').value = (qtd * unit).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-        }
-
-        function calcularUnitarioPersonalizado() {
-            let qtd = parseInt(document.getElementById('qtdCartoes').value.replace(/\D/g, '')) || 0;
-            let total = parseFloat(document.getElementById('valorTotal').value.replace(/\./g, '').replace(',', '.')) || 0;
-            if (qtd > 0 && total > 0) {
-                document.getElementById('valorUnitario').value = (total / qtd).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-        }
-
-        function verificarPacote() {
-            const escolha = document.getElementById("pacoteCartoes").value;
-            const caixa = document.getElementById("caixaPersonalizada");
-            if (escolha === "personalizado") { caixa.style.display = "block"; } else { caixa.style.display = "none"; }
-        }
-
-        function formatarDataPorExtenso(dataDoCalendario) {
-            if (!dataDoCalendario) return "";
-            const partes = dataDoCalendario.split('-'); 
-            const ano = partes[0]; const mesNumero = parseInt(partes[1]) - 1; const dia = partes[2];
-            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-            return dia + " de " + meses[mesNumero] + " de " + ano;
-        }
-
-        function numeroParaExtenso(numero, isMoeda = false) {
-            if (numero === 0) return isMoeda ? "zero reais" : "zero";
-            const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
-            const especiais = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
-            const dezenas = ["", "dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
-            const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
-
-            function obterGrupo(n) {
-                if (n === 100) return "cem";
-                let c = Math.floor(n / 100); let d = Math.floor((n % 100) / 10); let u = n % 10;
-                let palavras = [];
-                if (c > 0) palavras.push(centenas[c]);
-                if (d === 1) { palavras.push(especiais[u]); } else {
-                    if (d > 1) palavras.push(dezenas[d]);
-                    if (u > 0) palavras.push(unidades[u]);
-                }
-                return palavras.join(" e ");
-            }
-
-            let numStr = numero.toFixed(2);
-            let [inteiro, decimal] = numStr.split('.');
-            let intNum = parseInt(inteiro, 10); let decNum = parseInt(decimal, 10);
-            let partes = [];
-
-            if (intNum > 0) {
-                let milhoes = Math.floor(intNum / 1000000); let milhares = Math.floor((intNum % 1000000) / 1000); let centavosInt = intNum % 1000;
-                if (milhoes > 0) partes.push(obterGrupo(milhoes) + (milhoes === 1 ? " milhão" : " milhões"));
-                if (milhares > 0) partes.push((milhares === 1 ? "um mil" : obterGrupo(milhares)) + " mil");
-                if (centavosInt > 0) {
-                    let txt = obterGrupo(centavosInt);
-                    if (partes.length > 0 && (centavosInt <= 100 || centavosInt % 100 === 0)) partes.push("e " + txt); else partes.push(txt);
-                }
-            }
-
-            let resultado = partes.join(", ").replace(/, e /g, " e ");
-            
-            if (isMoeda) {
-                if (intNum === 1) resultado += " real"; else if (intNum > 1) resultado += " reais";
-                if (decNum > 0) {
-                    let txtDec = obterGrupo(decNum);
-                    if (intNum > 0) resultado += " e " + txtDec + (decNum === 1 ? " centavo" : " centavos"); else resultado = txtDec + (decNum === 1 ? " centavo" : " centavos");
-                }
-            }
-            return resultado.trim();
-        }
-
-        async function gerarDocumento() {
-            const erroValidacao = validarCampos();
-            if (erroValidacao !== null) { alert("Atenção: " + erroValidacao); return; }
-
-            const caminhoArquivo = document.getElementById('modeloContrato').value;
-
-            try {
-                const resposta = await fetch(caminhoArquivo);
-                if (!resposta.ok) { alert("Erro: O arquivo modelo (" + caminhoArquivo + ") não foi encontrado."); return; }
-
-                const conteudo = await resposta.arrayBuffer();
-                const zip = new PizZip(conteudo);
-                const documento = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: '{', end: '}' } });
-
-                const valCliente = document.getElementById('cliente').value.toUpperCase();
-                const valFantasia = document.getElementById('fantasia').value.toUpperCase();
-                const valCidade = document.getElementById('cidade').value;
-                const valUF = document.getElementById('uf').value.toUpperCase();
-                const valCEP = document.getElementById('cep').value;
-                const valCNPJ = document.getElementById('cnpj').value;
-                
-                let dataSelecionada = (caminhoArquivo === "Recibo.docx") ? document.getElementById('dataEscolhidaRecibo').value : document.getElementById('dataEscolhida').value;
-                const valDataExtenso = formatarDataPorExtenso(dataSelecionada);
-
-                let pacoteQtd = ""; let pacoteValor = ""; let pacoteValorTotal = ""; 
-                let pacoteQtdExtenso = ""; let pacoteValorExtenso = ""; let pacoteValorTotalExtenso = "";
-                const escolhaPacote = document.getElementById("pacoteCartoes").value;
-                
-                if (escolhaPacote === "500") {
-                    pacoteQtd = "500"; pacoteQtdExtenso = "quinhentos"; pacoteValor = "17,00"; pacoteValorExtenso = "dezessete reais"; pacoteValorTotal = "8.500,00"; pacoteValorTotalExtenso = "oito mil e quinhentos reais";
-                } else if (escolhaPacote === "1000") {
-                    pacoteQtd = "1.000"; pacoteQtdExtenso = "um mil"; pacoteValor = "13,00"; pacoteValorExtenso = "treze reais"; pacoteValorTotal = "13.000,00"; pacoteValorTotalExtenso = "treze mil reais";
-                } else if (escolhaPacote === "2000") {
-                    pacoteQtd = "2.000"; pacoteQtdExtenso = "dois mil"; pacoteValor = "11,00"; pacoteValorExtenso = "onze reais"; pacoteValorTotal = "22.000,00"; pacoteValorTotalExtenso = "vinte e dois mil reais";
-                } else if (escolhaPacote === "personalizado") {
-                    pacoteQtd = document.getElementById('qtdCartoes').value;
-                    pacoteValor = document.getElementById('valorUnitario').value;
-                    pacoteValorTotal = document.getElementById('valorTotal').value;
-
-                    let qNum = parseInt(pacoteQtd.replace(/\D/g, '')) || 0;
-                    let uNum = parseFloat(pacoteValor.replace(/\./g, '').replace(',', '.')) || 0;
-                    let tNum = parseFloat(pacoteValorTotal.replace(/\./g, '').replace(',', '.')) || 0;
-
-                    pacoteQtdExtenso = numeroParaExtenso(qNum, false);
-                    pacoteValorExtenso = numeroParaExtenso(uNum, true);
-                    pacoteValorTotalExtenso = numeroParaExtenso(tNum, true);
-                }
-
-                documento.render({
-                    cliente: valCliente, fantasia: valFantasia, cidade: valCidade, UF: valUF, CEP: valCEP, CNPJ: valCNPJ, data: valDataExtenso, 
-                    qtd_cartoes: pacoteQtd, qtd_extenso: pacoteQtdExtenso, valor_cartao: pacoteValor, valor_extenso: pacoteValorExtenso, valor_total: pacoteValorTotal, valor_total_extenso: pacoteValorTotalExtenso
-                });
-
-                // === A MÁGICA DA NOMEAÇÃO DO ARQUIVO ===
-                // Se a empresa tiver um Nome Fantasia preenchido, ele usa. Se não tiver, usa a Razão Social (valCliente) para não ficar vazio.
-                const nomeParaArquivo = valFantasia !== "" ? valFantasia : valCliente;
-                const prefixoArquivo = (caminhoArquivo === "Recibo.docx") ? "RECIBO" : "CONTRATO";
-                const nomeFinal = `${prefixoArquivo} - ${nomeParaArquivo}.docx`;
-
-                const arquivoGerado = documento.getZip().generate({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-                saveAs(arquivoGerado, nomeFinal);
-
-            } catch (erro) {
-                console.error("Erro completo:", erro);
-                alert("Erro ao processar o arquivo Word! Motivo: " + (erro.message || "Verifique se todas as chaves {} estão fechadas corretamente no documento original."));
-            }
-        }
+        // Se já estiver logado, não precisa logar de novo
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) { window.location.href = "dashboard.html"; }
+        });
     </script>
 </body>
 </html>
